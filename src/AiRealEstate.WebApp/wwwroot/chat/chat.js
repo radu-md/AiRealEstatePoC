@@ -6,7 +6,7 @@ function sendMessage() {
   appendMessage("Tu", input);
   inputEl.value = "";
 
-  fetch("/api/chat", {
+  fetch("https://localhost:7191/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message: input })
