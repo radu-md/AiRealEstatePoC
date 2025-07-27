@@ -25,7 +25,8 @@ public class ConversationStateService : IConversationStateService
         _store[sessionId].Add(new ChatMessage
         {
             Role = message.Role,
-            Content = cleaned
+            Content = cleaned,
+            UserPreferences = message.UserPreferences
         });
                 
         if (_store[sessionId].Count > 10)

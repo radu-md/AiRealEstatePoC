@@ -24,8 +24,8 @@ function sendMessage() {
   .then(data => {
     appendMessage("Asistent", data.response);
 
-    if (data.listings) renderListings(data.listings);
     if (data.suggestedQuestions) renderSuggestions(data.suggestedQuestions);
+    if (data.listings) renderListings(data.listings);
 
     scrollToBottom();
   })
@@ -49,7 +49,6 @@ function renderListings(listings) {
     card.innerHTML = `
       <img src="${listing.image}" alt="poza">
       <h4>${listing.title}</h4>
-      <p>${listing.price}</p>
       <a href="${listing.link}" target="_blank">Vezi detalii</a>
     `;
     document.getElementById("messages").appendChild(card);
@@ -60,13 +59,21 @@ function renderSuggestions(questions) {
   const container = document.createElement("div");
   container.className = "suggestions";
   questions.forEach(q => {
+    if (!q.includes("?")) {
     const btn = document.createElement("button");
-    btn.innerText = q;
+    btn.innerText = q;    
     btn.onclick = () => {
       document.getElementById("userInput").value = q;
       sendMessage();
     };
-    container.appendChild(btn);
+    container.appendChild(btn);    
+    }
+    else {
+      const suggestion = document.createElement("div");
+      suggestion.className = "suggestion";
+      suggestion.innerText = q;
+      container.appendChild(suggestion);
+    }
   });
   document.getElementById("messages").appendChild(container);
 }

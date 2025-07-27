@@ -4,5 +4,5 @@ namespace AiRealEstate.Core.Services;
 
 public interface IQueryBuilderService
 {
-    string? BuildUrl(UserPreferences? prefs);
+    Task<string?> BuildUrlAsync(UserPreferences? prefs);
 }

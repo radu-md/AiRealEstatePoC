@@ -5,5 +5,5 @@ namespace AiRealEstate.Core.Services;
 
 public interface IChatService
 {
-    Task<ChatResult> GetResponseAsync(string sessionId, string message);
+    Task<ChatResult> GetResponseAsync(string sessionId, string newMessage);
 }

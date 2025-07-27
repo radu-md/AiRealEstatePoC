@@ -10,4 +10,8 @@
     <ProjectReference Include="..\AiRealEstate.Core\AiRealEstate.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.12.2" />
+  </ItemGroup>
+
 </Project>

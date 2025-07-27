@@ -1,4 +1,5 @@
 using AiRealEstate.Core.Services;
+using AiRealEstate.Core.Skills;
 using AiRealEstate.Infrastructure.Services;
 using Microsoft.SemanticKernel;
 
@@ -19,8 +20,10 @@ builder.Services.AddSingleton<Kernel>(_ =>
 });
 
 builder.Services.AddScoped<IChatService, ChatService>();
-builder.Services.AddScoped<IConversationStateService, ConversationStateService>();
+builder.Services.AddSingleton<IConversationStateService, ConversationStateService>();
 builder.Services.AddScoped<IQueryBuilderService, QueryBuilderService>();
+builder.Services.AddScoped<IExtractUserPreferencesSkill, ExtractUserPreferencesSkill>();
+builder.Services.AddScoped<IListingScraperService, ListingScraperService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 // Add Swagger services
