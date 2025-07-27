@@ -12,7 +12,7 @@ public class ChatService : IChatService
         _chat = kernel.GetRequiredService<IChatCompletionService>();
     }
 
-    public async Task<string> AskAsync(string prompt)
+    public async Task<string> GetResponseAsync(string prompt)
     {
         var result = await _chat.GetChatMessageContentAsync(prompt);
         return result.Content ?? string.Empty;

@@ -1,4 +1,5 @@
-﻿using AiRealEstate.Core.Services;
+﻿using AiRealEstate.Api.Model;
+using AiRealEstate.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AiRealEstate.Api.Controllers;
@@ -14,15 +15,28 @@ public class ChatController : ControllerBase
         _chatService = chatService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] string prompt)
+    [HttpPost]
+    public async Task<IActionResult> Post([FromBody] ChatRequest prompt)
     {
-        if (string.IsNullOrWhiteSpace(prompt))
+        if (prompt is null || string.IsNullOrWhiteSpace(prompt.Message))
         {
-            return BadRequest("Prompt is required.");
+            return BadRequest("Message is required.");
         }
 
-        var response = await _chatService.AskAsync(prompt);
-        return Ok(new { response });
+        var reply = await _chatService.GetResponseAsync(prompt.Message);
+
+        return Ok(new
+        {
+            response = reply,
+            listings = new[] {
+                new {
+                    title = "Apartament modern în Cluj",
+                    price = "550 EUR",
+                    link = "https://romimo.ro/listing/123",
+                    image = "https://romimo.ro/img.jpg"
+                }
+            },
+            suggestedQuestions = new[] { "În ce cartier?", "Care este bugetul?" }
+        });
     }
 }
