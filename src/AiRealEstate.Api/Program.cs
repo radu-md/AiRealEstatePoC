@@ -1,7 +1,7 @@
 using AiRealEstate.Core.Services;
+using AiRealEstate.Infrastructure.Services;
 using Microsoft.SemanticKernel;
 
-// using Microsoft.SemanticKernel.Extensions.Microsoft.DependencyInjection;
 var builder = WebApplication.CreateBuilder(args);
 
 // Load config
@@ -19,6 +19,8 @@ builder.Services.AddSingleton<Kernel>(_ =>
 });
 
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IConversationStateService, ConversationStateService>();
+builder.Services.AddScoped<IQueryBuilderService, QueryBuilderService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 // Add Swagger services

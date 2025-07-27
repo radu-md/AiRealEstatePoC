@@ -1,4 +1,10 @@
 function sendMessage() {
+  let sessionId = localStorage.getItem("chatSessionId");
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    localStorage.setItem("chatSessionId", sessionId);
+  }
+
   const inputEl = document.getElementById("userInput");
   const input = inputEl.value;
   if (!input.trim()) return;
@@ -8,7 +14,10 @@ function sendMessage() {
 
   fetch("https://localhost:7191/api/chat", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      "X-Session-Id": sessionId 
+    },
     body: JSON.stringify({ message: input })
   })
   .then(res => res.json())
@@ -66,3 +75,12 @@ function scrollToBottom() {
   const messages = document.getElementById("messages");
   messages.scrollTop = messages.scrollHeight;
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById("userInput").addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+});
