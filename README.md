@@ -13,6 +13,7 @@ This project simulates a conversational agent that helps users find properties o
 - [Building and Running](#building-and-running)
 - [API Usage](#api-usage)
 - [API Reference](#api-reference)
+- [Frontend Reference](#frontend-reference)
 - [Testing](#testing)
 - [Prompts](#prompts)
 
@@ -108,6 +109,13 @@ http://localhost:<port>/swagger
 ## 📝 API Reference
 
 Detailed API documentation is available in [`src/AiRealEstate.Api/README_API.md`](src/AiRealEstate.Api/README_API.md).
+
+---
+
+<a id="frontend-reference"></a>
+## 🎨 Frontend Reference
+
+Detailed front-end documentation is available in [`src/AiRealEstate.WebApp/README_FRONTEND.md`](src/AiRealEstate.WebApp/README_FRONTEND.md).
 
 ---
 
