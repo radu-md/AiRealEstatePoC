@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\AiRealEstate.Core\AiRealEstate.Core.csproj" />
+    <ProjectReference Include="..\..\src\AiRealEstate.Infrastructure\AiRealEstate.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
