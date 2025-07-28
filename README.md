@@ -16,7 +16,7 @@ A proof-of-concept application demonstrating an AI-powered real estate assistant
 - **AiRealEstate.Api**: ASP.NET Core Web API providing chat and listing endpoints. Integrates Azure OpenAI via Semantic Kernel.
 - **AiRealEstate.Core**: Core models, prompts, and service interfaces (chat service, query builder, conversation state).
 - **AiRealEstate.Infrastructure**: Implementations for scraping real estate listings and building AI queries.
-- **AiRealEstate.WebApp**: Front-end web application consuming the API (e.g., React or Razor Pages).
+- **AiRealEstate.WebApp**: Front-end web application consuming the API.
 - **AiRealEstate.Tests**: Unit and integration tests for core and API projects.
 
 ## Prerequisites
