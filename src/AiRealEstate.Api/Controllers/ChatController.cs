@@ -20,9 +20,9 @@ public class ChatController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] ChatRequest request)
     {
-        if (request is null || string.IsNullOrWhiteSpace(request.Message))
+        if (request is null)
         {
-            return BadRequest("Message is required.");
+            return BadRequest("ChatRequest is required.");
         }
 
         var sessionId = Request.Headers["X-Session-Id"].FirstOrDefault()

@@ -5,12 +5,11 @@ function sendMessage() {
     localStorage.setItem("chatSessionId", sessionId);
   }
 
-  const inputEl = document.getElementById("userInput");
-  const input = inputEl.value;
-  if (!input.trim()) return;
+  const userInput = document.getElementById("userInput");
+  const input = userInput.value;
 
-  appendMessage("Tu", input);
-  inputEl.value = "";
+  appendMessage("Eu", input);
+  userInput.value = "";
 
   fetch("https://localhost:7191/api/chat", {
     method: "POST",

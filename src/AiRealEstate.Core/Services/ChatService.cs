@@ -13,8 +13,12 @@ public class ChatService : IChatService
     private readonly IExtractUserPreferencesSkill _extractUserPreferencesSkill;
     private readonly IListingScraperService _listingScraperService;
 
-    public ChatService(Kernel kernel, IConversationStateService state, IQueryBuilderService queryBuilder, 
-        IExtractUserPreferencesSkill extractUserPreferencesSkill, IListingScraperService listingScraperService)
+    public ChatService(
+        Kernel kernel, 
+        IConversationStateService state, 
+        IQueryBuilderService queryBuilder, 
+        IExtractUserPreferencesSkill extractUserPreferencesSkill, 
+        IListingScraperService listingScraperService)
     {
         _chat = kernel.GetRequiredService<IChatCompletionService>();
         _state = state;
@@ -23,8 +27,13 @@ public class ChatService : IChatService
         _listingScraperService = listingScraperService;
     }
 
-    public async Task<ChatResult> GetResponseAsync(string sessionId, string newMessage)
+    public async Task<ChatResult> GetResponseAsync(string sessionId, string? newMessage)
     {
+        if (string.IsNullOrWhiteSpace(newMessage))
+        {
+            return new ChatResult { Response = "Te rog să introduci un mesaj." };
+        }
+
         var history = new ChatHistory();
         history.AddSystemMessage("""
         Ești un asistent imobiliar inteligent. Răspunzi în limba română și ajuți utilizatorii să găsească proprietăți potrivite pe www.romimo.ro (foarte important sa fie specificat www.romimo.ro).
