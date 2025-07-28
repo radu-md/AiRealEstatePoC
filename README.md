@@ -18,6 +18,7 @@ This project simulates a conversational agent that helps users find properties o
 
 ---
 
+<a id="project-structure"></a>
 ## 🧱 Project Structure
 
 ```
@@ -37,6 +38,7 @@ AiRealEstatePoC/
 
 ---
 
+<a id="prerequisites"></a>
 ## ⚙️ Prerequisites
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download)
@@ -45,6 +47,7 @@ AiRealEstatePoC/
 
 ---
 
+<a id="configuration"></a>
 ## 🛠️ Configuration
 
 In `src/AiRealEstate.Api/appsettings.json`, configure your Azure OpenAI settings:
@@ -61,6 +64,7 @@ In `src/AiRealEstate.Api/appsettings.json`, configure your Azure OpenAI settings
 
 ---
 
+<a id="building-and-running"></a>
 ## 🚀 Building and Running
 
 ```bash
@@ -84,6 +88,7 @@ dotnet serve -d
 
 ---
 
+<a id="api-usage"></a>
 ## 📡 API Usage
 
 Explore endpoints with Swagger at:
@@ -99,12 +104,14 @@ http://localhost:<port>/swagger
 
 ---
 
+<a id="api-reference"></a>
 ## 📝 API Reference
 
 Detailed API documentation is available in [`src/AiRealEstate.Api/README_API.md`](src/AiRealEstate.Api/README_API.md).
 
 ---
 
+<a id="testing"></a>
 ## 🧪 Testing
 
 Run all unit and integration tests:
@@ -115,6 +122,7 @@ dotnet test
 
 ---
 
+<a id="prompts"></a>
 ## 💬 Prompts
 
 Prompt templates used to extract preferences from natural language can be found in:
@@ -125,6 +133,7 @@ These are passed to Semantic Kernel to generate structured `UserPreferences`.
 
 ---
 
+<a id="acknowledgements"></a>
 ## 🙌 Acknowledgements
 
 - [Azure OpenAI Service](https://azure.microsoft.com/en-us/products/ai-services/openai-service)
