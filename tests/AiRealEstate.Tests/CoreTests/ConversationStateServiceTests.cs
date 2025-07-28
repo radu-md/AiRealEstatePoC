@@ -1,8 +1,5 @@
-using System;
-using System.Linq;
-using Xunit;
-using AiRealEstate.Core.Services;
 using AiRealEstate.Core.Models;
+using AiRealEstate.Core.Services;
 
 namespace AiRealEstate.Tests.CoreTests
 {
@@ -35,17 +32,6 @@ namespace AiRealEstate.Tests.CoreTests
         }
 
         [Fact]
-        public void AddMessage_WhitespaceOnlyContent_ShouldStoreEmptyContent()
-        {
-            var message = new ChatMessage { Role = "assistant", Content = "   \t\n" };
-            _service.AddMessage(SessionId, message);
-            var history = _service.GetHistory(SessionId);
-
-            Assert.Single(history);
-            Assert.Equal(string.Empty, history.First().Content);
-        }
-
-        [Fact]
         public void AddMessage_MoreThanLimit_ShouldKeepLast10Messages()
         {
             // Add 12 messages
@@ -71,6 +57,13 @@ namespace AiRealEstate.Tests.CoreTests
             _service.Clear(SessionId);
             var historyAfterClear = _service.GetHistory(SessionId);
             Assert.Empty(historyAfterClear);
+        }
+
+        [Fact]
+        public void AddMessage_NullOrEmptyContent_ShouldThrowArgumentException()
+        {
+            var message = new ChatMessage { Role = "user", Content = "   " };
+            Assert.Throws<ArgumentException>(() => _service.AddMessage(SessionId, message));
         }
     }
 }

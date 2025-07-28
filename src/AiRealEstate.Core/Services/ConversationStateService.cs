@@ -15,6 +15,11 @@ public class ConversationStateService : IConversationStateService
 
     public void AddMessage(string sessionId, ChatMessage message)
     {
+        if (string.IsNullOrWhiteSpace(message.Content))
+        {
+            throw new ArgumentException("Message content cannot be null or empty.", nameof(message));
+        }
+
         if (!_store.ContainsKey(sessionId))
         {
             _store[sessionId] = new List<ChatMessage>();
