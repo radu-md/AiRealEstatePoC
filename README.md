@@ -12,6 +12,7 @@ This project simulates a conversational agent that helps users find properties o
 - [Configuration](#configuration)
 - [Building and Running](#building-and-running)
 - [API Usage](#api-usage)
+- [API Reference](#api-reference)
 - [Testing](#testing)
 - [Prompts](#prompts)
 
@@ -95,6 +96,12 @@ http://localhost:<port>/swagger
 
 - `POST /api/chat`  
   Accepts `{ "message": "..." }` and returns AI response, extracted preferences, and suggested follow-up questions.
+
+---
+
+## 📝 API Reference
+
+Detailed API documentation is available in [`src/AiRealEstate.Api/README_API.md`](src/AiRealEstate.Api/README_API.md).
 
 ---
 
