@@ -9,8 +9,8 @@ A proof-of-concept application demonstrating an AI-powered real estate assistant
 - [Building and Running](#building-and-running)
 - [API Usage](#api-usage)
 - [Testing](#testing)
-- [Contributing](#contributing)
-- [License](#license)
+- [Prompts](#prompts)
+
 
 ## Project Structure
 - **AiRealEstate.Api**: ASP.NET Core Web API providing chat and listing endpoints. Integrates Azure OpenAI via Semantic Kernel.
@@ -51,8 +51,5 @@ Run all tests:
 dotnet test
 ```
 
-## Contributing
-Contributions are welcome! Please open issues or submit pull requests for enhancements and bug fixes.
-
-## License
-This project is licensed under the MIT License.
+## Prompts
+A list of AI prompt templates used by the application can be found in [`src/AiRealEstate.Core/Prompts/PROMPTS.md`](src/AiRealEstate.Core/Prompts/PROMPTS.md).
