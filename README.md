@@ -118,12 +118,6 @@ These are passed to Semantic Kernel to generate structured `UserPreferences`.
 
 ---
 
-## 📌 License
-
-This proof-of-concept is provided as-is for experimentation and internal research. See [IDesign Licence](./IDesign Licence.pdf) for any architectural standards applied.
-
----
-
 ## 🙌 Acknowledgements
 
 - [Azure OpenAI Service](https://azure.microsoft.com/en-us/products/ai-services/openai-service)
