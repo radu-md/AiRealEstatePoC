@@ -34,94 +34,85 @@ public class ChatService : IChatService
             return new ChatResult { Response = "Te rog să introduci un mesaj." };
         }
 
+        var pastMessages = _state.GetHistory(sessionId);
+        var lastPrefString = GetLastPreferences(pastMessages);
+
         var history = new ChatHistory();
         history.AddSystemMessage("""
-        Ești un asistent imobiliar inteligent. Răspunzi în limba română și ajuți utilizatorii să găsească proprietăți potrivite pe www.romimo.ro (foarte important sa fie specificat www.romimo.ro).
-
-        Obiectivul tău este să înțelegi preferințele utilizatorului (ex: tipul locuinței, orașul, zona, prețul, facilități dorite) și să oferi răspunsuri clare și relevante.
-
-        Dacă informațiile sunt incomplete, formulează întrebări prietenoase pentru a obține detalii suplimentare.
-
-        Nu solicita niciodată date personale (nume, email, telefon). Fii politicos, concis și util.
-
-        Blochează orice conținut inadecvat sau necorespunzător. Daca este asa in raspuns trebuie sa spui "Bine ai venit pe portalul www.romimo.ro, unde poți găsi cele mai bune oferte imobiliare din România. Cum te pot ajuta astăzi?".
-
-        Nu repeta intrebarile si limiteaza-te la raspunsuri scurte si la obiect de maxim 200 de caractere.
+        Ești un asistent imobiliar inteligent. Răspunzi în limba română și ajuți utilizatorii să găsească proprietăți potrivite pe www.romimo.ro (foarte important să fie specificat www.romimo.ro).
+        Obiectivul tău este să înțelegi preferințele utilizatorului (ex: tipul locuinței, orașul, zona, prețul, facilități dorite) și să oferi sugestii clare și relevante.
+        Blochează orice conținut inadecvat sau necorespunzător. Dacă apare conținut neadecvat, răspunde cu: "Bine ai venit pe portalul www.romimo.ro, unde poți găsi cele mai bune oferte imobiliare din România. Cum te pot ajuta astăzi?".
+        Limitează-te la sugestii scurte și la obiect de maxim 100 de caractere.
         """);
+        AddPastMessagesToHistory(history, pastMessages);
 
-        var pastMessages = _state.GetHistory(sessionId);
+        var preferences = await _extractUserPreferencesSkill.ExtractAsync(
+            $"{newMessage} cu preferințele {lastPrefString ?? string.Empty}");
 
-        string? lastPref = pastMessages
-            .Where(m => m.Role == "user" && m.UserPreferences is not null)
-            .Select(m => m.UserPreferences!.ToString())
-            .LastOrDefault();
+        history.AddUserMessage($"{newMessage} cu preferințele {preferences?.ToString() ?? string.Empty}");
 
-        foreach (var msg in pastMessages)
+        var assistantReply = await _chat.GetChatMessageContentAsync(history);
+        if (assistantReply is null || string.IsNullOrWhiteSpace(assistantReply.Content))
         {
-            if (msg.Role == "user")
-                history.AddUserMessage($"{ msg.Content} cu preferintele {msg.UserPreferences?.ToString() ?? String.Empty}");
-            else
-                history.AddAssistantMessage(msg.Content);
+            return new ChatResult { Response = "Îmi pare rău, nu am putut genera un răspuns." };
         }
-
-        if (!string.IsNullOrWhiteSpace(newMessage))
-        {
-            history.AddUserMessage(newMessage);
-        }
-        else
-        {
-            return new ChatResult
-            {
-                Response = "Te rog să introduci un mesaj."
-            };
-        }
-
-        var result = await _chat.GetChatMessageContentAsync(history);
-
-        if (result is null || string.IsNullOrWhiteSpace(result.Content))
-        {
-            return new ChatResult
-            {
-                Response = "Imi pare rau, nu am putut genera un raspuns."
-            };
-        }
-
-        var prefs = await _extractUserPreferencesSkill.ExtractAsync($"{newMessage} cu preferintele {lastPref ?? String.Empty}");
 
         _state.AddMessage(sessionId, new ChatMessage
         {
             Role = "user",
             Content = newMessage,
-            UserPreferences = prefs
+            UserPreferences = preferences
         });
-
         _state.AddMessage(sessionId, new ChatMessage
         {
             Role = "assistant",
-            Content = result.Content
+            Content = assistantReply.Content
         });
 
-        var url = await _queryBuilder.BuildUrlAsync(prefs);
+        var adUrl = await _queryBuilder.BuildUrlAsync(preferences);
 
-        if (string.IsNullOrWhiteSpace(url))
+        if (string.IsNullOrWhiteSpace(adUrl))
         {
             return new ChatResult
             {
-                Response = result.Content,
-                SuggestedQuestions = GenerateSmartSuggestions(prefs)
+                Response = assistantReply.Content,
+                SuggestedQuestions = GenerateSmartSuggestions(preferences)
             };
         }
 
-        var listing = await _listingScraperService.ExtractListingFromUrlAsync(url);
-
+        var listing = await _listingScraperService.ExtractListingFromUrlAsync(adUrl);
         var listings = listing is not null ? new List<Listing> { listing } : null;
 
         return new ChatResult
         {
-            Response = result.Content,
+            Response = assistantReply.Content,
             Listings = listings,
-            SuggestedQuestions = GenerateSmartSuggestions(prefs)
+            SuggestedQuestions = GenerateSmartSuggestions(preferences)
         };
+    }
+
+    private string? GetLastPreferences(IEnumerable<ChatMessage> pastMessages)
+    {
+        return pastMessages
+            .Where(m => m.Role == "user" && m.UserPreferences is not null)
+            .Select(m => m.UserPreferences!.ToString())
+            .LastOrDefault();
+    }
+
+    private void AddPastMessagesToHistory(ChatHistory history, IEnumerable<ChatMessage> pastMessages)
+    {
+        foreach (var msg in pastMessages)
+        {
+            if (msg.Role == "user")
+            {
+                var prefsText = msg.UserPreferences?.ToString() ?? string.Empty;
+                history.AddUserMessage($"{msg.Content} cu preferințele {prefsText}");
+            }
+            else
+            {
+                history.AddAssistantMessage(msg.Content);
+            }
+        }
     }
 
     private List<string>? GenerateSmartSuggestions(UserPreferences? preferences)
@@ -137,7 +128,7 @@ public class ChatService : IChatService
 
         if (allNullOrEmpty)
         {
-            suggestions.Add("Cu ce te pot ajuta? Ai dori să cumperi sau să închiriezi?");
+            suggestions.Add("Doresti să cumperi sau să închiriezi?");
             suggestions.Add("Caut o locuință de vânzare");
             suggestions.Add("Caut o locuință de închiriat");
             return suggestions;
@@ -145,7 +136,7 @@ public class ChatService : IChatService
 
         if (string.IsNullOrWhiteSpace(preferences!.TransactionType))
         {
-            suggestions.Add("Ce tip de tranzacție cauți?");
+            suggestions.Add("Ce anume vrei?");
             suggestions.Add("Vreau să cumpăr");
             suggestions.Add("Vreau să închiriez");
             return suggestions;
@@ -154,9 +145,9 @@ public class ChatService : IChatService
         if (string.IsNullOrWhiteSpace(preferences.PropertyType))
         {
             suggestions.Add("Ce tip de locuință preferi?");
-            suggestions.Add("Garsoniere");
-            suggestions.Add("Apartamente");
-            suggestions.Add("Case");
+            suggestions.Add("Garsoniera");
+            suggestions.Add("Apartament");
+            suggestions.Add("Casa");
             return suggestions;
         }
 
@@ -202,6 +193,7 @@ public class ChatService : IChatService
             suggestions.Add("Care este bugetul tău maxim?");
             suggestions.Add("Sub 50.000 EUR");
             suggestions.Add("Până în 100.000 EUR");
+            suggestions.Add("Până în 200.000 EUR");
             return suggestions;
         }
 
@@ -210,7 +202,7 @@ public class ChatService : IChatService
             suggestions.Add("Ai vreo preferință legată de zonă sau facilități?");
             suggestions.Add("Lângă scoala gimnaziala");
             suggestions.Add("Zonă liniștită");
-            suggestions.Add("Langa un parc");
+            suggestions.Add("Lângă un parc");
             return suggestions;
         }
 
