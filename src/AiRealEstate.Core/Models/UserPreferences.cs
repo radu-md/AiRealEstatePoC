@@ -23,22 +23,28 @@ public class UserPreferences
     {
         if (other == null) return;
 
-        if (string.IsNullOrWhiteSpace(TransactionType) && !string.IsNullOrWhiteSpace(other.TransactionType))
+        if ((string.IsNullOrWhiteSpace(TransactionType) && !string.IsNullOrWhiteSpace(other.TransactionType)) || 
+            (!string.IsNullOrWhiteSpace(TransactionType) && !string.IsNullOrWhiteSpace(other.TransactionType) && TransactionType != other.TransactionType))
             TransactionType = other.TransactionType;
 
-        if (string.IsNullOrWhiteSpace(PropertyType) && !string.IsNullOrWhiteSpace(other.PropertyType))
+        if ((string.IsNullOrWhiteSpace(PropertyType) && !string.IsNullOrWhiteSpace(other.PropertyType)) ||
+            (!string.IsNullOrWhiteSpace(PropertyType) && !string.IsNullOrWhiteSpace(other.PropertyType) && PropertyType != other.PropertyType))
             PropertyType = other.PropertyType;
 
-        if (string.IsNullOrWhiteSpace(City) && !string.IsNullOrWhiteSpace(other.City))
+        if ((string.IsNullOrWhiteSpace(City) && !string.IsNullOrWhiteSpace(other.City)) ||
+            (!string.IsNullOrWhiteSpace(City) && !string.IsNullOrWhiteSpace(other.City) && City != other.City))
             City = other.City;
 
-        if (string.IsNullOrWhiteSpace(County) && !string.IsNullOrWhiteSpace(other.County))
+        if ((string.IsNullOrWhiteSpace(County) && !string.IsNullOrWhiteSpace(other.County)) ||
+            (!string.IsNullOrWhiteSpace(County) && !string.IsNullOrWhiteSpace(other.County) && County != other.County))
             County = other.County;
 
-        if (!MaxPrice.HasValue && other.MaxPrice.HasValue)
+        if ((!MaxPrice.HasValue && other.MaxPrice.HasValue) ||
+            (MaxPrice.HasValue && other.MaxPrice.HasValue && MaxPrice != other.MaxPrice))
             MaxPrice = other.MaxPrice;
 
-        if (string.IsNullOrWhiteSpace(TextFilter) && !string.IsNullOrWhiteSpace(other.TextFilter))
+        if ((string.IsNullOrWhiteSpace(TextFilter) && !string.IsNullOrWhiteSpace(other.TextFilter)) ||
+            (!string.IsNullOrWhiteSpace(TextFilter) && !string.IsNullOrWhiteSpace(other.TextFilter) && TextFilter != other.TextFilter))
             TextFilter = other.TextFilter;
     }
 
