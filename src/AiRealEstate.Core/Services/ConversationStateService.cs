@@ -1,14 +1,18 @@
 ﻿using AiRealEstate.Core.Models;
+using System.Collections.Concurrent;
 
 namespace AiRealEstate.Core.Services;
 
 public class ConversationStateService : IConversationStateService
 {
-    private readonly Dictionary<string, List<ChatMessage>> _store = new();
+    private readonly ConcurrentDictionary<string, List<ChatMessage>> _store = new();
 
     public List<ChatMessage> GetHistory(string sessionId)
     {
-        if (!_store.ContainsKey(sessionId)) return new();
+        if (!_store.ContainsKey(sessionId))
+        {
+            _store[sessionId] = new List<ChatMessage>();
+        }
 
         return _store[sessionId];
     }
@@ -20,31 +24,23 @@ public class ConversationStateService : IConversationStateService
             throw new ArgumentException("Message content cannot be null or empty.", nameof(message));
         }
 
-        if (!_store.ContainsKey(sessionId))
-        {
-            _store[sessionId] = new List<ChatMessage>();
-        }
-
         var cleaned = CleanMessage(message.Content);
 
-        _store[sessionId].Add(new ChatMessage
+        var newMessage = new ChatMessage
         {
             Role = message.Role,
-            Content = cleaned,
-            UserPreferences = message.UserPreferences
-        });
-                
+            Content = cleaned
+        };
+
+        var list = _store.GetOrAdd(sessionId, _ => new List<ChatMessage>());
+        lock (list)
+        {
+            list.Add(newMessage);
+        }
+                        
         if (_store[sessionId].Count > 10)
         {
             _store[sessionId] = _store[sessionId].TakeLast(10).ToList();
-        }
-    }
-
-    public void Clear(string sessionId)
-    {
-        if (_store.ContainsKey(sessionId))
-        {
-            _store.Remove(sessionId);
         }
     }
 

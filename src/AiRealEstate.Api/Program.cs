@@ -21,6 +21,7 @@ builder.Services.AddSingleton<Kernel>(_ =>
 
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddSingleton<IConversationStateService, ConversationStateService>();
+builder.Services.AddSingleton<IUserPreferencesStateService, UserPreferencesStateService>();
 builder.Services.AddScoped<IQueryBuilderService, QueryBuilderService>();
 builder.Services.AddScoped<IExtractUserPreferencesSkill, ExtractUserPreferencesSkill>();
 builder.Services.AddScoped<IListingScraperService, ListingScraperService>();

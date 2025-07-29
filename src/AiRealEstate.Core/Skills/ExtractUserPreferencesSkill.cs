@@ -17,7 +17,7 @@ public class ExtractUserPreferencesSkill : IExtractUserPreferencesSkill
         _promptTemplate = File.ReadAllText(promptPath);
     }
 
-    public async Task<UserPreferences?> ExtractAsync(string userMessage)
+    public async Task<UserPreferences> ExtractAsync(string userMessage)
     {
         var prompt = _promptTemplate.Replace("{{userMessage}}", userMessage);
 
@@ -49,11 +49,11 @@ public class ExtractUserPreferencesSkill : IExtractUserPreferencesSkill
                     prefs.TextFilter = "";
             }
 
-            return prefs;
+            return prefs ?? new();
         }
         catch
         {
-            return null;
+            return new();
         }
     }
 }

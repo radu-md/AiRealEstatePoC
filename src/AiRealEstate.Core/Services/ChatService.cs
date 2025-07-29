@@ -11,19 +11,22 @@ public class ChatService : IChatService
     private readonly IConversationStateService _state;
     private readonly IQueryBuilderService _queryBuilder;
     private readonly IExtractUserPreferencesSkill _extractUserPreferencesSkill;
+    private readonly IUserPreferencesStateService _userPreferencesStateService;
     private readonly IListingScraperService _listingScraperService;
 
     public ChatService(
         Kernel kernel, 
         IConversationStateService state, 
         IQueryBuilderService queryBuilder, 
-        IExtractUserPreferencesSkill extractUserPreferencesSkill, 
+        IExtractUserPreferencesSkill extractUserPreferencesSkill,
+        IUserPreferencesStateService userPreferencesStateService,
         IListingScraperService listingScraperService)
     {
         _chat = kernel.GetRequiredService<IChatCompletionService>();
         _state = state;
         _queryBuilder = queryBuilder;
         _extractUserPreferencesSkill = extractUserPreferencesSkill;
+        _userPreferencesStateService = userPreferencesStateService;
         _listingScraperService = listingScraperService;
     }
 
@@ -35,7 +38,8 @@ public class ChatService : IChatService
         }
 
         var pastMessages = _state.GetHistory(sessionId);
-        var lastPrefString = GetLastPreferences(pastMessages);
+        var newUserPreferences = _userPreferencesStateService.UpdatePreferences(sessionId, await _extractUserPreferencesSkill.ExtractAsync(newMessage));
+        var suggestedQuestions = GenerateSmartSuggestions(newUserPreferences);
 
         var history = new ChatHistory();
         history.AddSystemMessage("""
@@ -44,12 +48,19 @@ public class ChatService : IChatService
         Blochează orice conținut inadecvat sau necorespunzător. Dacă apare conținut neadecvat, răspunde cu: "Bine ai venit pe portalul www.romimo.ro, unde poți găsi cele mai bune oferte imobiliare din România. Cum te pot ajuta astăzi?".
         Limitează-te la sugestii scurte și la obiect de maxim 100 de caractere.
         """);
+
+        if (!newUserPreferences.IsEmpty())
+        {
+            history.AddSystemMessage($"Preferinte pentru sugestii: {newUserPreferences.ToString()}");
+        }
+        if (suggestedQuestions is not null && suggestedQuestions.Any())
+        {
+            history.AddSystemMessage($"Întrebări sugerate: {String.Join(" ", suggestedQuestions)}");
+        }
+
         AddPastMessagesToHistory(history, pastMessages);
 
-        var preferences = await _extractUserPreferencesSkill.ExtractAsync(
-            $"{newMessage} cu preferințele {lastPrefString ?? string.Empty}");
-
-        history.AddUserMessage($"{newMessage} cu preferințele {preferences?.ToString() ?? string.Empty}");
+        history.AddUserMessage(newMessage);
 
         var assistantReply = await _chat.GetChatMessageContentAsync(history);
         if (assistantReply is null || string.IsNullOrWhiteSpace(assistantReply.Content))
@@ -60,8 +71,7 @@ public class ChatService : IChatService
         _state.AddMessage(sessionId, new ChatMessage
         {
             Role = "user",
-            Content = newMessage,
-            UserPreferences = preferences
+            Content = newMessage
         });
         _state.AddMessage(sessionId, new ChatMessage
         {
@@ -69,14 +79,14 @@ public class ChatService : IChatService
             Content = assistantReply.Content
         });
 
-        var adUrl = await _queryBuilder.BuildUrlAsync(preferences);
+        var adUrl = await _queryBuilder.BuildUrlAsync(newUserPreferences);
 
         if (string.IsNullOrWhiteSpace(adUrl))
         {
             return new ChatResult
             {
                 Response = assistantReply.Content,
-                SuggestedQuestions = GenerateSmartSuggestions(preferences)
+                SuggestedQuestions = suggestedQuestions
             };
         }
 
@@ -87,16 +97,8 @@ public class ChatService : IChatService
         {
             Response = assistantReply.Content,
             Listings = listings,
-            SuggestedQuestions = GenerateSmartSuggestions(preferences)
+            SuggestedQuestions = suggestedQuestions
         };
-    }
-
-    private string? GetLastPreferences(IEnumerable<ChatMessage> pastMessages)
-    {
-        return pastMessages
-            .Where(m => m.Role == "user" && m.UserPreferences is not null)
-            .Select(m => m.UserPreferences!.ToString())
-            .LastOrDefault();
     }
 
     private void AddPastMessagesToHistory(ChatHistory history, IEnumerable<ChatMessage> pastMessages)
@@ -105,8 +107,7 @@ public class ChatService : IChatService
         {
             if (msg.Role == "user")
             {
-                var prefsText = msg.UserPreferences?.ToString() ?? string.Empty;
-                history.AddUserMessage($"{msg.Content} cu preferințele {prefsText}");
+                history.AddUserMessage(msg.Content);
             }
             else
             {

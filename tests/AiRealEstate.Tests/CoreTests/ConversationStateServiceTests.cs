@@ -48,18 +48,6 @@ namespace AiRealEstate.Tests.CoreTests
         }
 
         [Fact]
-        public void Clear_ShouldRemoveAllHistory()
-        {
-            var msg = new ChatMessage { Role = "user", Content = "test" };
-            _service.AddMessage(SessionId, msg);
-            Assert.Single(_service.GetHistory(SessionId));
-
-            _service.Clear(SessionId);
-            var historyAfterClear = _service.GetHistory(SessionId);
-            Assert.Empty(historyAfterClear);
-        }
-
-        [Fact]
         public void AddMessage_NullOrEmptyContent_ShouldThrowArgumentException()
         {
             var message = new ChatMessage { Role = "user", Content = "   " };
