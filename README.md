@@ -29,10 +29,9 @@ AiRealEstatePoC/
 ├── AiRealEstate.Tests/         # Unit and integration tests
 ```
 
-- **`AiRealEstate.Api`**: Exposes `/api/chat` for conversational AI; integrates Semantic Kernel with Azure OpenAI.
+- **`AiRealEstate.Api`**: Exposes `/api/chat` for conversational AI; integrates Semantic Kernel with Azure OpenAI. Simple front-end UI for chat interaction.
 - **`AiRealEstate.Core`**: Shared domain: `ChatResult`, `UserPreferences`, prompt templates, and service contracts.
 - **`AiRealEstate.Infrastructure`**: Logic for scraping listings from romimo.ro and building dynamic search URLs.
-- **`AiRealEstate.WebApp`**: Simple front-end UI for chat interaction.
 - **`AiRealEstate.Tests`**: Test coverage for logic, conversation flow, and prompt extraction.
 
 ---
