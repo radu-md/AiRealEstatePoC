@@ -247,6 +247,13 @@ public class ChatService : IChatService
             return suggestions;
         }
 
+        if (!preferences.IsEmpty())
+        {
+            suggestions.Add("Reseteaza filtrele");
+            suggestions.Add("Rafineaza mai mult");
+            return suggestions;
+        }
+
         return null;
     }
 
