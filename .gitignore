@@ -419,3 +419,5 @@ FodyWeavers.xsd
 
 # Pdf files
 *.pdf
+appsettings.Development.json
+appsettings.Production.json
