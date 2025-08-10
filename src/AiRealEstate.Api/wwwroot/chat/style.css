@@ -12,10 +12,14 @@ body {
   border: 1px solid #ddd;
   border-radius: 8px;
   font-family: sans-serif;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 #messages {
   height: 400px;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   border: 1px solid #ccc;
   padding: 10px;
@@ -25,12 +29,27 @@ body {
 }
 
 .message {
-  margin-bottom: 10px;
+  max-width: 70%;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-radius: 16px;
+  line-height: 1.4;
+}
+/* Differentiate user vs assistant messages */
+.message.user {
+  background-color: #dcf8c6;
+  align-self: flex-end;
+}
+.message.assistant {
+  background-color: #ffffff;
+  align-self: flex-start;
 }
 
 #input-area {
   display: flex;
   gap: 10px;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
 }
 
 input[type="text"] {
@@ -43,20 +62,30 @@ button {
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+button:hover {
+  background-color: #2980b9;
 }
 
 .listing-card {
   border: 1px solid #ccc;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 6px;
+  padding: 12px;
+  margin: 12px 0;
+  border-radius: 8px;
   background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 .listing-card img {
-  max-width: 200px;
+  max-width: 100%;
   height: auto;
   border-radius: 4px;
+  margin-bottom: 8px;
 }
 
 .suggestions {
@@ -64,13 +93,20 @@ button {
 }
 
 .suggestions button {
-  margin-right: 5px;
-  margin-bottom: 5px;
-  padding: 6px 12px;
-  border-radius: 4px;
-  background-color: #e0e0e0;
+  margin: 4px 6px 4px 0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background-color: #3498db;
+  color: #fff;
+  font-weight: 500;
   border: none;
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.suggestions button:hover {
+  background-color: #2980b9;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 #spinner {
