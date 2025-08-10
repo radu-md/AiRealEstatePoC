@@ -427,3 +427,6 @@ FodyWeavers.xsd
 # Azure publish settings
 **/*Zip Deploy
 **/profile.arm.json
+
+# Google Cloud vertex file
+vertex.json
