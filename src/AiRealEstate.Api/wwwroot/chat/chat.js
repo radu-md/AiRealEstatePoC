@@ -107,7 +107,7 @@ function renderCost(cost) {
         Timp de procesare: ${(cost.processingTimeInMiliseconds / 1000).toFixed(2)} sec
     `;
     totalCost += cost.totalCost;
-    document.getElementById("totalCost").innerText = totalCost.toFixed(2);
+    document.getElementById("totalCost").innerText = totalCost.toFixed(8);
     document.getElementById("messages").appendChild(costDiv);
 }
 
