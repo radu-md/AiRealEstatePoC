@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asistent Imobiliar</title>
-    <link rel="stylesheet" href="style.css?v=0.1.0">
+    <link rel="stylesheet" href="style.css?v=0.2.2">
 </head>
 <body>
     <div id="chat-container">
@@ -19,7 +19,9 @@
                 Gemini 2.5 Flash-Lite
             </label>
         </div>
-        <h1>Asistent Imobiliar cu <span id="selectedModel">GPT-5-mini</span> </h1>
+        <h1>Asistent cautari imobiliare</h1>
+        <h2>bazat pe <span id="selectedModel">GPT-5-mini</span></h2>
+        <h3>Cost cumulat: <span id="totalCost">0.00</span> $</h3>
         <p>Întreabă-mă orice despre imobiliare!</p>
         <div id="messages"></div>
         <div id="input-area">
@@ -27,6 +29,6 @@
             <button id="sendButton" onclick="sendMessage()">Trimite</button>
         </div>
     </div>
-    <script src="chat.js?v=0.1.5"></script>
+    <script src="chat.js?v=0.2.2"></script>
 </body>
 </html>

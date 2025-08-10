@@ -1,4 +1,5 @@
 let selectedModel = "GPT 5 mini";
+let totalCost = 0.0;
 
 async function sendMessage() {  
   const spinner = document.getElementById("spinner");
@@ -38,6 +39,7 @@ async function sendMessage() {
 
     if (data.suggestedQuestions) renderSuggestions(data.suggestedQuestions);
     if (data.listings) renderListings(data.listings);
+    if (data.requestCost) renderCost(data.requestCost);
 
     scrollToBottom();
 
@@ -92,6 +94,21 @@ function renderSuggestions(questions) {
     }
   });
   document.getElementById("messages").appendChild(container);
+}
+
+function renderCost(cost) {
+    const costDiv = document.createElement("div");
+    costDiv.className = "cost-info";
+    costDiv.innerHTML = `
+        <strong>Costul cererii:</strong><br>
+        Cost intrare: ${cost.inputTokens} tokens (${cost.inputCost.toFixed(8)} $)<br>
+        Cost ieșire: ${cost.outputTokens} tokens (${cost.outputCost.toFixed(8)} $)<br>
+        Cost total: ${cost.totalCost.toFixed(8)} $<br>
+        Timp de procesare: ${(cost.processingTimeInMiliseconds / 1000).toFixed(2)} sec
+    `;
+    totalCost += cost.totalCost;
+    document.getElementById("totalCost").innerText = totalCost.toFixed(2);
+    document.getElementById("messages").appendChild(costDiv);
 }
 
 function scrollToBottom() {

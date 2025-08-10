@@ -62,11 +62,16 @@ public class ChatService : IChatService
 
         history.AddUserMessage(newMessage);
 
+        var watch = System.Diagnostics.Stopwatch.StartNew();
         var assistantReply = await _chat.GetChatMessageContentAsync(history);
+        watch.Stop();
+        var elapsedMs = watch.ElapsedMilliseconds;
+
         if (assistantReply is null || string.IsNullOrWhiteSpace(assistantReply.Content))
         {
             return new ChatResult { Response = "Îmi pare rău, nu am putut genera un răspuns." };
         }
+
 
         _state.AddMessage(sessionId, new ChatMessage
         {
@@ -81,12 +86,18 @@ public class ChatService : IChatService
 
         var adUrl = await _queryBuilder.BuildUrlAsync(newUserPreferences);
 
+        // convert history items to string concatenation for cost calculation
+
+        string inputText = string.Join(" ", history
+            .Select(m => m.Content));
+
         if (string.IsNullOrWhiteSpace(adUrl))
         {
             return new ChatResult
             {
                 Response = assistantReply.Content,
-                SuggestedQuestions = suggestedQuestions
+                SuggestedQuestions = suggestedQuestions,
+                RequestCost = CalculateRequestCost(inputText: inputText, outputText: assistantReply.Content, elapsedMs: elapsedMs)
             };
         }
 
@@ -97,7 +108,36 @@ public class ChatService : IChatService
         {
             Response = assistantReply.Content,
             Listings = listings,
-            SuggestedQuestions = suggestedQuestions
+            SuggestedQuestions = suggestedQuestions,
+            RequestCost = CalculateRequestCost(inputText: inputText, outputText: assistantReply.Content, elapsedMs: elapsedMs)
+        };
+    }
+
+    private RequestCost CalculateRequestCost(string? inputText, string outputText, long elapsedMs)
+    {
+        /*
+         GPT-5-Mini
+         romanian words: 1 token = 0.75 words
+         $0.25 / 1M tokens
+         $2.00 / 1M tokens
+        */
+        if (string.IsNullOrWhiteSpace(inputText) || string.IsNullOrWhiteSpace(outputText))
+        {
+            return new RequestCost();
+        }
+
+        var inputTokens = (int)Math.Ceiling(inputText.Length / 4.0); // Rough estimate: 1 token ~ 4 characters
+        var outputTokens = (int)Math.Ceiling(outputText.Length / 4.0); // Rough estimate: 1 token ~ 4 characters
+        var inputCost = (inputTokens / 1_000_000.0) * 0.25; // $0.25 per million tokens
+        var outputCost = (outputTokens / 1_000_000.0) * 2.00; // $2.00 per million tokens
+
+        return new RequestCost
+        {
+            InputTokens = inputTokens,
+            OutputTokens = outputTokens,
+            InputCost = (decimal)inputCost,
+            OutputCost = (decimal)outputCost,
+            ProcessingTimeInMiliseconds = elapsedMs
         };
     }
 
