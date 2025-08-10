@@ -1,16 +1,10 @@
-let selectedModel = "gpt-5-mini";
-
-const API_BASE = (() => {
-  const qs = new URLSearchParams(location.search);
-  const override = qs.get("api");
-  if (override) return override;
-
-  const host = location.hostname;
-  if (host === "localhost" || host === "127.0.0.1") return DEFAULTS.local;
-  return DEFAULTS.prod;
-})();
+let selectedModel = "GPT 5 mini";
 
 async function sendMessage() {  
+  const spinner = document.getElementById("spinner");
+  spinner.style.display = 'block';
+  const sendButton = document.getElementById("sendButton");
+  sendButton.disabled = true;
   let sessionId = localStorage.getItem("chatSessionId");
   if (!sessionId) {
     sessionId = crypto.randomUUID();
@@ -21,6 +15,8 @@ async function sendMessage() {
   const input = userInput.value;
   if (!input || input.trim() === "" || input.length < 3) {
     appendMessage("Eroare", "Te rog introdu un mesaj valid (minim 3 caractere).");
+    spinner.style.display = 'none';
+    sendButton.disabled = false;
     return;
   }
 
@@ -37,14 +33,19 @@ async function sendMessage() {
     });
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    const data = await res.json();    
     appendMessage("Asistent", data.response);
 
     if (data.suggestedQuestions) renderSuggestions(data.suggestedQuestions);
     if (data.listings) renderListings(data.listings);
 
     scrollToBottom();
+
+    spinner.style.display = 'none';
+    sendButton.disabled = false;
   } catch (e) {
+    spinner.style.display = 'none';
+    sendButton.disabled = false;
     appendMessage("Eroare", "A apărut o problemă cu serverul.");
     console.log("Chat error:", e);
   }

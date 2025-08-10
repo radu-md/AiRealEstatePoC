@@ -1,32 +1,32 @@
 <!DOCTYPE html>
 <html lang="ro">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asistent Imobiliar</title>
-  <link rel="stylesheet" href="style.css?v=0.1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistent Imobiliar</title>
+    <link rel="stylesheet" href="style.css?v=0.1.0">
 </head>
 <body>
-  <div id="chat-container">
-    <div id="model-selection">
-      <label>
-        <input type="radio" name="modelSelect" value="GPT-5-mini" checked onclick="updateSelectedModel()">
-        GPT-5-mini
-      </label>
-      <label>
-        <input type="radio" name="modelSelect" value="google-palm" onclick="updateSelectedModel()">
-        Google PaLM
-      </label>
+    <div id="chat-container">
+        <div id="spinner"></div>
+        <div id="model-selection">
+            <label>
+                <input type="radio" name="modelSelect" value="GPT 5 mini" checked onclick="updateSelectedModel()">
+                GPT 5 mini
+            </label>
+            <label>
+                <input type="radio" name="modelSelect" value="Gemini 2.5 Flash-Lite" onclick="updateSelectedModel()">
+                Gemini 2.5 Flash-Lite
+            </label>
+        </div>
+        <h1>Asistent Imobiliar cu <span id="selectedModel">GPT-5-mini</span> </h1>
+        <p>Întreabă-mă orice despre imobiliare!</p>
+        <div id="messages"></div>
+        <div id="input-area">
+            <input type="text" id="userInput" placeholder="Scrie un mesaj..." />
+            <button id="sendButton" onclick="sendMessage()">Trimite</button>
+        </div>
     </div>
-    <h1>Asistent Imobiliar cu <span id="selectedModel">GPT-5-mini</span> </h1>
-    <p>Întreabă-mă orice despre imobiliare!</p>
-    <div id="messages"></div>
-    <div id="input-area">
-      <input type="text" id="userInput" placeholder="Scrie un mesaj..." />
-      
-      <button onclick="sendMessage()">Trimite</button>
-    </div>
-  </div>
-  <script src="chat.js?v=0.1.5"></script>
+    <script src="chat.js?v=0.1.5"></script>
 </body>
 </html>
