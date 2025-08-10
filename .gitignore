@@ -419,5 +419,11 @@ FodyWeavers.xsd
 
 # Pdf files
 *.pdf
+
+# ASP.NET Core configuration files
 **/appsettings.Development.json
 **/appsettings.Production.json
+
+# Azure publish settings
+**/*Zip Deploy
+**/profile.arm.json

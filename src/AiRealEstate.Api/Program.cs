@@ -38,7 +38,15 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseAuthorization();
 app.MapControllers();
+
+app.MapGet("/health", () =>
+                Results.Json(new { status = "OK", timestamp = DateTime.UtcNow })
+            )
+            .WithName("HealthCheck")
+            .WithTags("System");
 
 app.Run();

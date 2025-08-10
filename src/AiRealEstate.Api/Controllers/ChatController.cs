@@ -20,16 +20,33 @@ public class ChatController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] ChatRequest request)
     {
-        if (request is null)
+        try
         {
-            return BadRequest("ChatRequest is required.");
+            if (request is null)
+            {
+                return BadRequest("ChatRequest is required.");
+            }
+
+            var sessionId = Request.Headers["X-Session-Id"].FirstOrDefault()
+                        ?? Guid.NewGuid().ToString();
+
+            var chatResponse = await _chatService.GetResponseAsync(sessionId, request.Message);
+
+            return Ok(chatResponse);
         }
+        catch (RequestFailedException ex)
+        {
+            return StatusCode((int)ex.Status, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
+    }
 
-        var sessionId = Request.Headers["X-Session-Id"].FirstOrDefault()
-                    ?? Guid.NewGuid().ToString();
-
-        var chatResponse = await _chatService.GetResponseAsync(sessionId, request.Message);
-
-        return Ok(chatResponse);
+    [HttpPost("health")]
+    public IActionResult HealthCheck()
+    {
+        return Ok(new { status = "OK", timestamp = DateTime.UtcNow });
     }
 }

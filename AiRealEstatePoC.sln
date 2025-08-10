@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiRealEstate.Api", "src\AiRealEstate.Api\AiRealEstate.Api.csproj", "{2494BD95-C4A1-4AD4-B348-D874A9FE3146}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiRealEstate.ApiAndWebApp", "src\AiRealEstate.Api\AiRealEstate.ApiAndWebApp.csproj", "{2494BD95-C4A1-4AD4-B348-D874A9FE3146}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiRealEstate.Core", "src\AiRealEstate.Core\AiRealEstate.Core.csproj", "{5694E076-D79D-4811-ABBF-BC1F828569F8}"
 EndProject
@@ -14,8 +14,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiRealEstate.Tests", "tests\AiRealEstate.Tests\AiRealEstate.Tests.csproj", "{F4BD909B-CA54-4B12-91BF-962421789A78}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiRealEstate.WebApp", "src\AiRealEstate.WebApp\AiRealEstate.WebApp.csproj", "{C66C9E4C-6D20-42A0-9882-8B492E3F13D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,18 +73,6 @@ Global
 		{F4BD909B-CA54-4B12-91BF-962421789A78}.Release|x64.Build.0 = Release|Any CPU
 		{F4BD909B-CA54-4B12-91BF-962421789A78}.Release|x86.ActiveCfg = Release|Any CPU
 		{F4BD909B-CA54-4B12-91BF-962421789A78}.Release|x86.Build.0 = Release|Any CPU
-		{C66C9E4C-6D20-42A0-9882-8B492E3F13D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C66C9E4C-6D20-42A0-9882-8B492E3F13D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C66C9E4C-6D20-42A0-9882-8B492E3F13D1}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C66C9E4C-6D20-42A0-9882-8B492E3F13D1}.Debug|x64.Build.0 = Debug|Any CPU
-		{C66C9E4C-6D20-42A0-9882-8B492E3F13D1}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C66C9E4C-6D20-42A0-9882-8B492E3F13D1}.Debug|x86.Build.0 = Debug|Any CPU
-		{C66C9E4C-6D20-42A0-9882-8B492E3F13D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C66C9E4C-6D20-42A0-9882-8B492E3F13D1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C66C9E4C-6D20-42A0-9882-8B492E3F13D1}.Release|x64.ActiveCfg = Release|Any CPU
-		{C66C9E4C-6D20-42A0-9882-8B492E3F13D1}.Release|x64.Build.0 = Release|Any CPU
-		{C66C9E4C-6D20-42A0-9882-8B492E3F13D1}.Release|x86.ActiveCfg = Release|Any CPU
-		{C66C9E4C-6D20-42A0-9882-8B492E3F13D1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -96,6 +82,5 @@ Global
 		{5694E076-D79D-4811-ABBF-BC1F828569F8} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{561FD321-11D9-4DB1-8D2F-2534FC9216AD} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{F4BD909B-CA54-4B12-91BF-962421789A78} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
-		{C66C9E4C-6D20-42A0-9882-8B492E3F13D1} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal
