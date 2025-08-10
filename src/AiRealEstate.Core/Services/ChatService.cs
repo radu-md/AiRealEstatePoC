@@ -249,8 +249,7 @@ public class ChatService : IChatService
 
         if (!preferences.IsEmpty())
         {
-            suggestions.Add("Reseteaza filtrele");
-            suggestions.Add("Rafineaza mai mult");
+            suggestions.Add("Reseteaza filtrele de cautare");
             return suggestions;
         }
 
