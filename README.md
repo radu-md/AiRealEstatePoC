@@ -13,7 +13,6 @@ This project simulates a conversational agent that helps users find properties o
 - [Building and Running](#building-and-running)
 - [API Usage](#api-usage)
 - [API Reference](#api-reference)
-- [Frontend Reference](#frontend-reference)
 - [Testing](#testing)
 - [Prompts](#prompts)
 
@@ -24,10 +23,9 @@ This project simulates a conversational agent that helps users find properties o
 
 ```
 AiRealEstatePoC/
-├── AiRealEstate.Api/           # ASP.NET Core Web API (entry point)
+├── AiRealEstate.Api/           # ASP.NET Core Web API (entry point) + Minimal JavaScript chat-based frontend
 ├── AiRealEstate.Core/          # Core models, prompts, and service interfaces
 ├── AiRealEstate.Infrastructure/ # Scraping + query builder implementations
-├── AiRealEstate.WebApp/        # Minimal JavaScript chat-based frontend
 ├── AiRealEstate.Tests/         # Unit and integration tests
 ```
 
@@ -109,13 +107,6 @@ http://localhost:<port>/swagger
 ## 📝 API Reference
 
 Detailed API documentation is available in [`src/AiRealEstate.Api/README_API.md`](src/AiRealEstate.Api/README_API.md).
-
----
-
-<a id="frontend-reference"></a>
-## 🎨 Frontend Reference
-
-Detailed front-end documentation is available in [`src/AiRealEstate.WebApp/README_FRONTEND.md`](src/AiRealEstate.WebApp/README_FRONTEND.md).
 
 ---
 
