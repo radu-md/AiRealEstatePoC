@@ -125,6 +125,7 @@ function getSelectedModel() {
     for (let i = 0; i < radios.length; i++) {
         if (radios[i].checked) {
             selectedModel = radios[i].value;
+            totalCost = 0.0;
             return selectedModel;
         }
     }
