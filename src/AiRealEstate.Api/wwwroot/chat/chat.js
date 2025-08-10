@@ -1,3 +1,5 @@
+let selectedModel = "gpt-5-mini";
+
 const API_BASE = (() => {
   const qs = new URLSearchParams(location.search);
   const override = qs.get("api");
@@ -24,13 +26,14 @@ async function sendMessage() {
 
   const trimmed = input.trim();
   appendMessage("Eu", trimmed);
-  userInput.value = "";
+    userInput.value = "";
+    scrollToBottom();
 
   try {
     const res = await fetch('/api/chat', {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Session-Id": sessionId },
-      body: JSON.stringify({ message: trimmed })
+        body: JSON.stringify({ model: selectedModel, message: trimmed })
     });
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -93,6 +96,21 @@ function renderSuggestions(questions) {
 function scrollToBottom() {
   const messages = document.getElementById("messages");
   messages.scrollTop = messages.scrollHeight;
+}
+
+function updateSelectedModel() {
+    document.getElementById("selectedModel").innerText = getSelectedModel();
+}
+
+function getSelectedModel() {
+    const radios = document.getElementsByName('modelSelect');
+    for (let i = 0; i < radios.length; i++) {
+        if (radios[i].checked) {
+            selectedModel = radios[i].value;
+            return selectedModel;
+        }
+    }
+    return selectedModel;
 }
 
 document.addEventListener("DOMContentLoaded", function () {
