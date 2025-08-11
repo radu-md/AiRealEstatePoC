@@ -41,6 +41,7 @@ public class ChatService : IChatService
         if (newMessage.Contains("Reseteaza", StringComparison.InvariantCultureIgnoreCase))
         {
             _state.RemoveAllMessages(sessionId);
+            _userPreferencesStateService.ResetPreferences(sessionId);
 
             return new ChatResult
             {

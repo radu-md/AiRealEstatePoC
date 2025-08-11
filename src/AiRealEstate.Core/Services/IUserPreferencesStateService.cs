@@ -6,5 +6,6 @@ namespace AiRealEstate.Core.Services
     {
         UserPreferences GetUserPreferences(string sessionId);
         UserPreferences UpdatePreferences(string sessionId, UserPreferences newPrefs);
+        void ResetPreferences(string sessionId);
     }
 }
