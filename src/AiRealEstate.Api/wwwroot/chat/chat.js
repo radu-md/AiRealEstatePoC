@@ -126,6 +126,7 @@ function getSelectedModel() {
         if (radios[i].checked) {
             selectedModel = radios[i].value;
             totalCost = 0.0;
+            document.getElementById("totalCost").innerText = totalCost.toFixed(8);
             document.getElementById("messages").innerHTML = ""; // Clear messages
             return selectedModel;
         }
