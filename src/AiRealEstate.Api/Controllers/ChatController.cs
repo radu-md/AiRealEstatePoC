@@ -30,7 +30,9 @@ public class ChatController : ControllerBase
             var sessionId = Request.Headers["X-Session-Id"].FirstOrDefault()
                         ?? Guid.NewGuid().ToString();
 
-            var chatResponse = await _chatService.GetResponseAsync(sessionId, request.Message);
+            string aiModel = request.Model == "GPT 5 mini" ? "azure" : "vertex";
+
+            var chatResponse = await _chatService.GetResponseAsync(aiModel, sessionId, request.Message);
 
             return Ok(chatResponse);
         }
@@ -47,6 +49,13 @@ public class ChatController : ControllerBase
     [HttpPost("health")]
     public IActionResult HealthCheck()
     {
-        return Ok(new { status = "OK", timestamp = DateTime.UtcNow });
+        try
+        {
+            return Ok(new { status = "OK", timestamp = DateTime.UtcNow });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
+        }
     }
 }
