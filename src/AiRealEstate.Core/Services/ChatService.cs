@@ -7,7 +7,7 @@ namespace AiRealEstate.Core.Services;
 
 public class ChatService : IChatService
 {
-    private readonly IChatCompletionService _chat;
+    private readonly Kernel _kernel;
     private readonly IConversationStateService _state;
     private readonly IQueryBuilderService _queryBuilder;
     private readonly IExtractUserPreferencesSkill _extractUserPreferencesSkill;
@@ -20,9 +20,10 @@ public class ChatService : IChatService
         IQueryBuilderService queryBuilder, 
         IExtractUserPreferencesSkill extractUserPreferencesSkill,
         IUserPreferencesStateService userPreferencesStateService,
-        IListingScraperService listingScraperService)
+        IListingScraperService listingScraperService
+        )
     {
-        _chat = kernel.GetRequiredService<IChatCompletionService>();
+        _kernel = kernel;
         _state = state;
         _queryBuilder = queryBuilder;
         _extractUserPreferencesSkill = extractUserPreferencesSkill;
@@ -30,15 +31,17 @@ public class ChatService : IChatService
         _listingScraperService = listingScraperService;
     }
 
-    public async Task<ChatResult> GetResponseAsync(string sessionId, string? newMessage)
+    public async Task<ChatResult> GetResponseAsync(string aiModel, string sessionId, string? newMessage)
     {
         if (string.IsNullOrWhiteSpace(newMessage))
         {
             return new ChatResult { Response = "Te rog să introduci un mesaj." };
         }
 
+        var chat = _kernel.GetRequiredService<IChatCompletionService>(aiModel);
         var pastMessages = _state.GetHistory(sessionId);
-        var newUserPreferences = _userPreferencesStateService.UpdatePreferences(sessionId, await _extractUserPreferencesSkill.ExtractAsync(newMessage));
+        var userPreferences = await _extractUserPreferencesSkill.ExtractAsync(aiModel, newMessage);
+        var newUserPreferences = _userPreferencesStateService.UpdatePreferences(sessionId, userPreferences);
         var suggestedQuestions = GenerateSmartSuggestions(newUserPreferences);
 
         var history = new ChatHistory();
@@ -63,7 +66,7 @@ public class ChatService : IChatService
         history.AddUserMessage(newMessage);
 
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        var assistantReply = await _chat.GetChatMessageContentAsync(history);
+        var assistantReply = await chat.GetChatMessageContentAsync(history);
         watch.Stop();
         var elapsedMs = watch.ElapsedMilliseconds;
 
@@ -86,8 +89,6 @@ public class ChatService : IChatService
 
         var adUrl = await _queryBuilder.BuildUrlAsync(newUserPreferences);
 
-        // convert history items to string concatenation for cost calculation
-
         string inputText = string.Join(" ", history
             .Select(m => m.Content));
 
@@ -97,7 +98,7 @@ public class ChatService : IChatService
             {
                 Response = assistantReply.Content,
                 SuggestedQuestions = suggestedQuestions,
-                RequestCost = CalculateRequestCost(inputText: inputText, outputText: assistantReply.Content, elapsedMs: elapsedMs)
+                RequestCost = CalculateRequestCost(aiModel: aiModel, inputText: inputText, outputText: assistantReply.Content, elapsedMs: elapsedMs)
             };
         }
 
@@ -109,27 +110,35 @@ public class ChatService : IChatService
             Response = assistantReply.Content,
             Listings = listings,
             SuggestedQuestions = suggestedQuestions,
-            RequestCost = CalculateRequestCost(inputText: inputText, outputText: assistantReply.Content, elapsedMs: elapsedMs)
+            RequestCost = CalculateRequestCost(aiModel: aiModel, inputText: inputText, outputText: assistantReply.Content, elapsedMs: elapsedMs)
         };
     }
 
-    private RequestCost CalculateRequestCost(string? inputText, string outputText, long elapsedMs)
+    private RequestCost CalculateRequestCost(string aiModel, string? inputText, string outputText, long elapsedMs)
     {
         /*
-         GPT-5-Mini
-         romanian words: 1 token = 0.75 words
-         $0.25 / 1M tokens
-         $2.00 / 1M tokens
+            GPT-5-Mini
+            romanian words: 1 token = 0.75 words
+            $0.25 / 1M tokens
+            $2.00 / 1M tokens
+
+            Vertex AI
+            romanian words: 1 token = 0.75 words
+            $0.10 / 1M tokens
+            $0.40 / 1M tokens
         */
         if (string.IsNullOrWhiteSpace(inputText) || string.IsNullOrWhiteSpace(outputText))
         {
             return new RequestCost();
         }
 
+        var inputPrice = aiModel == "azure" ? 0.25 : 0.10; // GPT-5-Mini vs Vertex AI
+        var outputPrice = aiModel == "azure" ? 2.00 : 0.40; // GPT-5-Mini vs Vertex AI
+
         var inputTokens = (int)Math.Ceiling(inputText.Length / 4.0); // Rough estimate: 1 token ~ 4 characters
         var outputTokens = (int)Math.Ceiling(outputText.Length / 4.0); // Rough estimate: 1 token ~ 4 characters
-        var inputCost = (inputTokens / 1_000_000.0) * 0.25; // $0.25 per million tokens
-        var outputCost = (outputTokens / 1_000_000.0) * 2.00; // $2.00 per million tokens
+        var inputCost = (inputTokens / 1_000_000.0) * inputPrice; // $0.25 vs $0.10 per million tokens
+        var outputCost = (outputTokens / 1_000_000.0) * outputPrice; // $2.00 vs $0.40 per million tokens
 
         return new RequestCost
         {
@@ -169,7 +178,7 @@ public class ChatService : IChatService
 
         if (allNullOrEmpty)
         {
-            suggestions.Add("Doresti să cumperi sau să închiriezi?");
+            //suggestions.Add("Doresti să cumperi sau să închiriezi?");
             suggestions.Add("Caut o locuință de vânzare");
             suggestions.Add("Caut o locuință de închiriat");
             return suggestions;
@@ -177,7 +186,7 @@ public class ChatService : IChatService
 
         if (string.IsNullOrWhiteSpace(preferences!.TransactionType))
         {
-            suggestions.Add("Ce anume vrei?");
+            //suggestions.Add("Ce anume vrei?");
             suggestions.Add("Vreau să cumpăr");
             suggestions.Add("Vreau să închiriez");
             return suggestions;
@@ -185,7 +194,7 @@ public class ChatService : IChatService
 
         if (string.IsNullOrWhiteSpace(preferences.PropertyType))
         {
-            suggestions.Add("Ce tip de locuință preferi?");
+            //suggestions.Add("Ce tip de locuință preferi?");
             suggestions.Add("Garsoniera");
             suggestions.Add("Apartament");
             suggestions.Add("Casa");
@@ -194,7 +203,7 @@ public class ChatService : IChatService
 
         if (string.IsNullOrWhiteSpace(preferences.County))
         {
-            suggestions.Add("În ce județ dorești să cauți?");
+            //suggestions.Add("În ce județ dorești să cauți?");
             suggestions.Add("Cluj");
             suggestions.Add("Timiș");
             suggestions.Add("Bihor");
@@ -203,7 +212,7 @@ public class ChatService : IChatService
 
         if (string.IsNullOrWhiteSpace(preferences.City))
         {
-            suggestions.Add("În ce localitate dorești să cauți?");
+            //suggestions.Add("În ce localitate dorești să cauți?");
             switch (preferences.County?.Trim().ToLower())
             {
                 case "cluj":
@@ -231,7 +240,7 @@ public class ChatService : IChatService
 
         if (!preferences.MaxPrice.HasValue)
         {
-            suggestions.Add("Care este bugetul tău maxim?");
+            //suggestions.Add("Care este bugetul tău maxim?");
             suggestions.Add("Sub 50.000 EUR");
             suggestions.Add("Până în 100.000 EUR");
             suggestions.Add("Până în 200.000 EUR");
@@ -240,7 +249,7 @@ public class ChatService : IChatService
 
         if (string.IsNullOrWhiteSpace(preferences.TextFilter))
         {
-            suggestions.Add("Ai vreo preferință legată de zonă sau facilități?");
+            //suggestions.Add("Ai vreo preferință legată de zonă sau facilități?");
             suggestions.Add("Lângă scoala gimnaziala");
             suggestions.Add("Zonă liniștită");
             suggestions.Add("Lângă un parc");

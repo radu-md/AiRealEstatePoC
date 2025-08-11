@@ -17,14 +17,15 @@ public class ExtractUserPreferencesSkill : IExtractUserPreferencesSkill
         _promptTemplate = File.ReadAllText(promptPath);
     }
 
-    public async Task<UserPreferences> ExtractAsync(string userMessage)
+    public async Task<UserPreferences> ExtractAsync(string aiModel, string userMessage)
     {
         var prompt = _promptTemplate.Replace("{{userMessage}}", userMessage);
 
-        var history = new ChatHistory(prompt);
+        var history = new ChatHistory();
+        history.AddUserMessage(prompt);
 
         var completion = await _kernel
-            .GetRequiredService<IChatCompletionService>()
+            .GetRequiredService<IChatCompletionService>(aiModel)
             .GetChatMessageContentAsync(history);
 
         try

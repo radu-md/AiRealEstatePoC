@@ -1,22 +1,43 @@
+using AiRealEstate.Core.Infrastructure;
 using AiRealEstate.Core.Services;
 using AiRealEstate.Core.Skills;
 using AiRealEstate.Infrastructure.Services;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.Google;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Load config
-var config = builder.Configuration.GetSection("AzureOpenAI");
-var deploymentName = config["DeploymentName"];
-var endpoint = config["Endpoint"];
-var apiKey = config["ApiKey"];
+AzureOpenAI azureOpenAI = builder.Configuration.GetSection("AzureOpenAI").Get<AzureOpenAI>()
+    ?? throw new Exception("AzureOpenAI section is missing or invalid in the configuration.");
+VertexAI vertexAi = builder.Configuration.GetSection("VertexAI").Get<VertexAI>()
+            ?? throw new Exception("VertexAI section is missing or invalid in the configuration.");
 
 // Register Semantic Kernel
 builder.Services.AddSingleton<Kernel>(_ =>
 {
-    var kernelBuilder = Kernel.CreateBuilder();
-    kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName!, endpoint!, apiKey!);
-    return kernelBuilder.Build();
+    var kb = Kernel.CreateBuilder();
+
+    kb.AddAzureOpenAIChatCompletion(
+        deploymentName: azureOpenAI.DeploymentName,
+        endpoint: azureOpenAI.Endpoint,
+        apiKey: azureOpenAI.ApiKey,
+        serviceId: "azure"
+    );
+
+    //var credential = GoogleCredential.GetApplicationDefault();
+    //credential = credential.CreateScoped("https://www.googleapis.com/auth/cloud-platform");
+
+    //kb.AddGoogleAIGeminiChatCompletion(
+    //    modelId: vertexAi.Model,      
+    //    apiKey: vertexAi.GetServiceAccountJson(),
+    //    apiVersion: GoogleAIVersion.V1,         
+    //    serviceId: "vertex"
+    //);
+
+    return kb.Build();
 });
 
 builder.Services.AddScoped<IChatService, ChatService>();
@@ -31,6 +52,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors();
+builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
+{
+    ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+});
 
 var app = builder.Build();
 // Enable Swagger middleware
@@ -48,5 +73,15 @@ app.MapGet("/health", () =>
             )
             .WithName("HealthCheck")
             .WithTags("System");
+
+app.MapGet("/config", (IConfiguration cfg) =>
+    {
+        bool hasAoai = !string.IsNullOrWhiteSpace(cfg["AzureOpenAI:ApiKey"]);
+        bool hasVtx = !string.IsNullOrWhiteSpace(cfg["VertexAI:ProjectId"]);
+        string? cred = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
+        return Results.Json(new { hasAoai, hasVtx, hasGoogleCredPath = !string.IsNullOrEmpty(cred) });
+    })
+    .WithName("ConfigCheck")
+    .WithTags("System");
 
 app.Run();
