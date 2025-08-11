@@ -20,7 +20,8 @@ public class ChatService : IChatService
         IQueryBuilderService queryBuilder, 
         IExtractUserPreferencesSkill extractUserPreferencesSkill,
         IUserPreferencesStateService userPreferencesStateService,
-        IListingScraperService listingScraperService)
+        IListingScraperService listingScraperService
+        )
     {
         _kernel = kernel;
         _state = state;
@@ -39,7 +40,7 @@ public class ChatService : IChatService
 
         var chat = _kernel.GetRequiredService<IChatCompletionService>(aiModel);
         var pastMessages = _state.GetHistory(sessionId);
-        var userPreferences = await _extractUserPreferencesSkill.ExtractAsync(aiModel, newMessage);        
+        var userPreferences = await _extractUserPreferencesSkill.ExtractAsync(aiModel, newMessage);
         var newUserPreferences = _userPreferencesStateService.UpdatePreferences(sessionId, userPreferences);
         var suggestedQuestions = GenerateSmartSuggestions(newUserPreferences);
 
@@ -87,8 +88,6 @@ public class ChatService : IChatService
         });
 
         var adUrl = await _queryBuilder.BuildUrlAsync(newUserPreferences);
-
-        // convert history items to string concatenation for cost calculation
 
         string inputText = string.Join(" ", history
             .Select(m => m.Content));

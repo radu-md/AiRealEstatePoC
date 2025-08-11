@@ -5,6 +5,7 @@ using AiRealEstate.Infrastructure.Services;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Google;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,15 +27,15 @@ builder.Services.AddSingleton<Kernel>(_ =>
         serviceId: "azure"
     );
 
-    var credential = GoogleCredential.GetApplicationDefault();
-    credential = credential.CreateScoped("https://www.googleapis.com/auth/cloud-platform");
+    //var credential = GoogleCredential.GetApplicationDefault();
+    //credential = credential.CreateScoped("https://www.googleapis.com/auth/cloud-platform");
 
-    kb.AddGoogleAIGeminiChatCompletion(
-        modelId: vertexAi.Model,      
-        apiKey: vertexAi.GetServiceAccountJson(),
-        apiVersion: GoogleAIVersion.V1,         
-        serviceId: "vertex"
-    );
+    //kb.AddGoogleAIGeminiChatCompletion(
+    //    modelId: vertexAi.Model,      
+    //    apiKey: vertexAi.GetServiceAccountJson(),
+    //    apiVersion: GoogleAIVersion.V1,         
+    //    serviceId: "vertex"
+    //);
 
     return kb.Build();
 });
@@ -51,6 +52,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors();
+builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
+{
+    ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+});
 
 var app = builder.Build();
 // Enable Swagger middleware
@@ -68,5 +73,15 @@ app.MapGet("/health", () =>
             )
             .WithName("HealthCheck")
             .WithTags("System");
+
+app.MapGet("/config", (IConfiguration cfg) =>
+    {
+        bool hasAoai = !string.IsNullOrWhiteSpace(cfg["AzureOpenAI:ApiKey"]);
+        bool hasVtx = !string.IsNullOrWhiteSpace(cfg["VertexAI:ProjectId"]);
+        string? cred = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
+        return Results.Json(new { hasAoai, hasVtx, hasGoogleCredPath = !string.IsNullOrEmpty(cred) });
+    })
+    .WithName("ConfigCheck")
+    .WithTags("System");
 
 app.Run();

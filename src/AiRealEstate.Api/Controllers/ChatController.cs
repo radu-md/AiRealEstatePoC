@@ -1,7 +1,6 @@
 ﻿using AiRealEstate.Api.Model;
 using AiRealEstate.Core.Services;
 using Azure;
-using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AiRealEstate.Api.Controllers;
@@ -46,7 +45,7 @@ public class ChatController : ControllerBase
         }
     }
 
-    [HttpPost("health")]
+    [HttpGet("health")]
     public IActionResult HealthCheck()
     {
         try
