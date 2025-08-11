@@ -6,4 +6,5 @@ public interface IConversationStateService
 {
     List<ChatMessage> GetHistory(string sessionId);
     void AddMessage(string sessionId, ChatMessage message);
+    void RemoveAllMessages(string sessionId);
 }

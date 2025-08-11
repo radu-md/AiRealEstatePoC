@@ -44,6 +44,17 @@ public class ConversationStateService : IConversationStateService
         }
     }
 
+    public void RemoveAllMessages(string sessionId)
+    {
+        if (_store.ContainsKey(sessionId))
+        {
+            lock (_store[sessionId])
+            {
+                _store[sessionId].Clear();
+            }
+        }
+    }
+
     private string CleanMessage(string input)
     {
         if (string.IsNullOrWhiteSpace(input))

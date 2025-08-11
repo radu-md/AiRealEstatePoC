@@ -38,6 +38,16 @@ public class ChatService : IChatService
             return new ChatResult { Response = "Te rog să introduci un mesaj." };
         }
 
+        if (newMessage.Contains("Reseteaza", StringComparison.InvariantCultureIgnoreCase))
+        {
+            _state.RemoveAllMessages(sessionId);
+
+            return new ChatResult
+            {
+                Response = "Preferințele tale au fost resetate. Te rog să începi o nouă căutare."
+            };
+        }
+
         var chat = _kernel.GetRequiredService<IChatCompletionService>(aiModel);
         var pastMessages = _state.GetHistory(sessionId);
         var userPreferences = await _extractUserPreferencesSkill.ExtractAsync(aiModel, newMessage);
