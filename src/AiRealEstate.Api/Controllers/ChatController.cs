@@ -37,11 +37,11 @@ public class ChatController : ControllerBase
         }
         catch (RequestFailedException ex)
         {
-            return StatusCode((int)ex.Status, ex.Message);
+            return StatusCode((int)ex.Status, ex);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
+            return StatusCode(500, ex);
         }
     }
 

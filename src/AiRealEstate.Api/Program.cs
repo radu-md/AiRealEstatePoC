@@ -80,4 +80,7 @@ app.MapGet("/config", (IConfiguration cfg) =>
     .WithName("ConfigCheck")
     .WithTags("System");
 
+// Redirect root to chat UI
+app.MapGet("/", () => Results.Redirect("/chat/index.html"));
+
 app.Run();

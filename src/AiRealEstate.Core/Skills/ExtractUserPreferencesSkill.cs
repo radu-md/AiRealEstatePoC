@@ -24,37 +24,30 @@ public class ExtractUserPreferencesSkill : IExtractUserPreferencesSkill
         var history = new ChatHistory();
         history.AddUserMessage(prompt);
 
-        try
+        var completion = await _kernel
+            .GetRequiredService<IChatCompletionService>(aiModel)
+            .GetChatMessageContentAsync(history);
+
+        var prefs = JsonSerializer.Deserialize<UserPreferences>(completion.Content!, new JsonSerializerOptions
         {
-            var completion = await _kernel
-                .GetRequiredService<IChatCompletionService>(aiModel)
-                .GetChatMessageContentAsync(history);
+            PropertyNameCaseInsensitive = true
+        });
 
-            var prefs = JsonSerializer.Deserialize<UserPreferences>(completion.Content!, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            // Replace any property value containing "..." with an empty string
-            if (prefs != null)
-            {
-                if (prefs.PropertyType is not null && prefs.PropertyType.Contains("..."))
-                    prefs.PropertyType = "";
-                if (prefs.TransactionType is not null && prefs.TransactionType.Contains("..."))
-                    prefs.TransactionType = "";
-                if (prefs.County is not null && prefs.County.Contains("..."))
-                    prefs.County = "";
-                if (prefs.City is not null && prefs.City.Contains("..."))
-                    prefs.City = "";
-                if (prefs.TextFilter is not null && prefs.TextFilter.Contains("..."))
-                    prefs.TextFilter = "";
-            }
-
-            return prefs ?? new();
-        }
-        catch
+        // Replace any property value containing "..." with an empty string
+        if (prefs != null)
         {
-            return new();
+            if (prefs.PropertyType is not null && prefs.PropertyType.Contains("..."))
+                prefs.PropertyType = "";
+            if (prefs.TransactionType is not null && prefs.TransactionType.Contains("..."))
+                prefs.TransactionType = "";
+            if (prefs.County is not null && prefs.County.Contains("..."))
+                prefs.County = "";
+            if (prefs.City is not null && prefs.City.Contains("..."))
+                prefs.City = "";
+            if (prefs.TextFilter is not null && prefs.TextFilter.Contains("..."))
+                prefs.TextFilter = "";
         }
+
+        return prefs ?? new();
     }
 }
