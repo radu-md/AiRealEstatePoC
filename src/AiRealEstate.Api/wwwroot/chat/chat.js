@@ -1,7 +1,6 @@
 let selectedModel = "GPT 5 nano";
 let totalCost = 0.0;
 
-// Lightweight cache to avoid recreating the same suggestion container repeatedly (optional future use)
 const uiConfig = {
   avatars: {
     user: "👤",
@@ -43,7 +42,7 @@ async function sendMessage() {
     });
     const rawText = await res.text();
     if (!res.ok) {
-      renderErrorRaw(res.status, rawText);
+      renderErrorRaw(res.status, rawText, res.statusText);
       spinner.style.display = 'none';
       sendButton.disabled = false;
       scrollToBottom();
@@ -69,12 +68,28 @@ async function sendMessage() {
   }
 }
 
-function renderErrorRaw(status, rawText) {
-  let pretty = rawText;
+function renderErrorRaw(status, rawText, statusText) {
+  let pretty = rawText || "";
+  let parsedObj = null;
   try {
-    const obj = JSON.parse(rawText);
-    pretty = JSON.stringify(obj, null, 2);
-  } catch { /* leave as is */ }
+    if (pretty.trim().length > 0) {
+      parsedObj = JSON.parse(pretty);
+      pretty = JSON.stringify(parsedObj, null, 2);
+    }
+  } catch { /* leave raw */ }
+
+  if (!pretty.trim()) {
+    pretty = JSON.stringify({
+      error: "Răspuns fără corp de la server",
+      status,
+      statusText: statusText || null,
+      hint: "Verifică logs server / CORS / middleware de eroare (poate elimină corpul)."
+    }, null, 2);
+  } else if (parsedObj && !parsedObj.message && !parsedObj.error) {
+    parsedObj.__summary = `HTTP ${status}${statusText ? ' '+statusText : ''}`;
+    pretty = JSON.stringify(parsedObj, null, 2);
+  }
+
   const messagesEl = document.getElementById("messages");
   const wrap = document.createElement('div');
   wrap.className = 'message message--error fade-in';
@@ -82,7 +97,7 @@ function renderErrorRaw(status, rawText) {
   wrap.innerHTML = `
     <div class="message__avatar">${avatar}</div>
     <div class="message__bubble">
-      <div class="message__meta"><span class="message__sender">Eroare API ${status}</span><span class="message__time">${timeNow()}</span></div>
+      <div class="message__meta"><span class="message__sender">Eroare API ${status}${statusText ? ' '+statusText : ''}</span><span class="message__time">${timeNow()}</span></div>
       <div class="message__content"><pre class="error-json">${escapeHtml(pretty)}</pre></div>
     </div>`;
   messagesEl.appendChild(wrap);
