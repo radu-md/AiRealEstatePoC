@@ -4,31 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asistent Imobiliar</title>
-    <link rel="stylesheet" href="style.css?v=0.2.3">
+    <link rel="stylesheet" href="style.css?v=0.2.5">
 </head>
 <body>
     <div id="chat-container">
         <div id="spinner"></div>
         <div id="model-selection">
             <label>
-                <input type="radio" name="modelSelect" value="GPT 5 mini" checked onclick="updateSelectedModel()">
-                GPT 5 mini
+                <input type="radio" name="modelSelect" value="GPT 5 nano" checked onclick="updateSelectedModel()">
+                GPT 5 nano
             </label>
             <label>
-                <input type="radio" name="modelSelect" value="Gemini 2.5 Flash-Lite" onclick="updateSelectedModel()">
-                Gemini 2.5 Flash-Lite
+                <input type="radio" name="modelSelect" value="Gemini 2.0 Flash-Lite" onclick="updateSelectedModel()">
+                Gemini 2.0 Flash-Lite
             </label>
         </div>
-        <h1>Asistent cautari imobiliare</h1>
-        <h2>bazat pe <span id="selectedModel">GPT-5-mini</span></h2>
-        <h3>Cost cumulat: <span id="totalCost">0.00000000</span> $</h3>
-        <p>Întreabă-mă orice despre imobiliare!</p>
+        <details class="pricing-box">
+            <summary>Detalii cost modele (tokens)</summary>
+            <div class="pricing-grid">
+                <div class="model">
+                    <h4>GPT-5-nano (Azure OpenAI)</h4>
+                    <ul>
+                        <li>Română: ~1 token ≈ 0.75 cuvinte</li>
+                        <li>Prompt: <strong>$0.05 / 1M tokens</strong></li>
+                        <li>Răspuns: <strong>$0.40 / 1M tokens</strong></li>
+                    </ul>
+                </div>
+                <div class="model">
+                    <h4>gemini-2.0-flash-lite (Vertex AI)</h4>
+                    <ul>
+                        <li>Română: ~1 token ≈ 0.75 cuvinte</li>
+                        <li>Prompt: <strong>$0.10 / 1M tokens</strong></li>
+                        <li>Răspuns: <strong>$0.40 / 1M tokens</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+        <header class="chat-header">
+            <div class="chat-header__titles">
+                <h1 class="app-title">Asistent căutări imobiliare</h1>
+                <div class="subtitle">bazat pe <span id="selectedModel" class="model-pill">GPT-5-mini</span></div>
+            </div>
+            <div class="cost-badge" title="Cost cumulat sesiune">
+                <span id="totalCost">0.00000000</span> $
+            </div>
+        </header>
+        <p class="tagline">Întreabă-mă orice despre imobiliare.</p>
         <div id="messages"></div>
         <div id="input-area">
             <input type="text" id="userInput" placeholder="Scrie un mesaj..." />
             <button id="sendButton" onclick="sendMessage()">Trimite</button>
         </div>
     </div>
-    <script src="chat.js?v=0.2.3"></script>
+    <script src="chat.js?v=0.2.5"></script>
 </body>
 </html>

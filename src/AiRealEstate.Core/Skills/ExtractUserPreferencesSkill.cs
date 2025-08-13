@@ -24,12 +24,12 @@ public class ExtractUserPreferencesSkill : IExtractUserPreferencesSkill
         var history = new ChatHistory();
         history.AddUserMessage(prompt);
 
-        var completion = await _kernel
-            .GetRequiredService<IChatCompletionService>(aiModel)
-            .GetChatMessageContentAsync(history);
-
         try
         {
+            var completion = await _kernel
+                .GetRequiredService<IChatCompletionService>(aiModel)
+                .GetChatMessageContentAsync(history);
+
             var prefs = JsonSerializer.Deserialize<UserPreferences>(completion.Content!, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true

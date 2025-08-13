@@ -27,15 +27,15 @@ builder.Services.AddSingleton<Kernel>(_ =>
         serviceId: "azure"
     );
 
-    //var credential = GoogleCredential.GetApplicationDefault();
-    //credential = credential.CreateScoped("https://www.googleapis.com/auth/cloud-platform");
+    var credential = GoogleCredential.GetApplicationDefault();
+    credential = credential.CreateScoped("https://www.googleapis.com/auth/cloud-platform");
 
-    //kb.AddGoogleAIGeminiChatCompletion(
-    //    modelId: vertexAi.Model,      
-    //    apiKey: vertexAi.GetServiceAccountJson(),
-    //    apiVersion: GoogleAIVersion.V1,         
-    //    serviceId: "vertex"
-    //);
+    kb.AddGoogleAIGeminiChatCompletion(
+        modelId: vertexAi.Model,
+        apiKey: vertexAi.GetServiceAccountJson(),
+        apiVersion: GoogleAIVersion.V1,
+        serviceId: "vertex"
+    );
 
     return kb.Build();
 });
@@ -52,10 +52,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors();
-builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
-{
-    ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
-});
 
 var app = builder.Build();
 // Enable Swagger middleware

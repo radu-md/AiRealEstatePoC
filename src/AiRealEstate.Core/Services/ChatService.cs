@@ -128,12 +128,12 @@ public class ChatService : IChatService
     private RequestCost CalculateRequestCost(string aiModel, string? inputText, string outputText, long elapsedMs)
     {
         /*
-            GPT-5-Mini
+            GPT-5-nano (Azure OpenAI)
             romanian words: 1 token = 0.75 words
-            $0.25 / 1M tokens
-            $2.00 / 1M tokens
+            $0.05 / 1M tokens
+            $0.40 / 1M tokens
 
-            Vertex AI
+            gemini-2.0-flash-lite (Vertex AI)
             romanian words: 1 token = 0.75 words
             $0.10 / 1M tokens
             $0.40 / 1M tokens

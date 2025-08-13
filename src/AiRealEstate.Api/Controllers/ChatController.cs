@@ -29,7 +29,7 @@ public class ChatController : ControllerBase
             var sessionId = Request.Headers["X-Session-Id"].FirstOrDefault()
                         ?? Guid.NewGuid().ToString();
 
-            string aiModel = request.Model == "GPT 5 mini" ? "azure" : "vertex";
+            string aiModel = request.Model == "GPT 5 nano" ? "azure" : "vertex";
 
             var chatResponse = await _chatService.GetResponseAsync(aiModel, sessionId, request.Message);
 

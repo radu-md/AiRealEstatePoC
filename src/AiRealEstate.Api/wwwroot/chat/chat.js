@@ -1,5 +1,14 @@
-let selectedModel = "GPT 5 mini";
+let selectedModel = "GPT 5 nano";
 let totalCost = 0.0;
+
+// Lightweight cache to avoid recreating the same suggestion container repeatedly (optional future use)
+const uiConfig = {
+  avatars: {
+    user: "👤",
+    assistant: "🤖",
+    error: "⚠️"
+  }
+};
 
 async function sendMessage() {  
   const spinner = document.getElementById("spinner");
@@ -54,23 +63,69 @@ async function sendMessage() {
 }
 
 function appendMessage(sender, text) {
+  const messagesEl = document.getElementById("messages");
   const msgDiv = document.createElement("div");
-  msgDiv.className = "message";
-  msgDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
-  document.getElementById("messages").appendChild(msgDiv);
+  const role = sender === "Eu" ? "user" : (sender === "Eroare" ? "error" : "assistant");
+  msgDiv.className = `message message--${role} fade-in`;
+
+  // Basic formatting: preserve line breaks & simple inline code blocks wrapped in backticks
+  const safeText = formatMessage(text);
+  const avatar = uiConfig.avatars[role] || "💬";
+  msgDiv.innerHTML = `
+    <div class="message__avatar">${avatar}</div>
+    <div class="message__bubble">
+      <div class="message__meta"><span class="message__sender">${sender}</span><span class="message__time">${timeNow()}</span></div>
+      <div class="message__content">${safeText}</div>
+    </div>`;
+  messagesEl.appendChild(msgDiv);
+}
+
+function formatMessage(text) {
+  if (!text) return "";
+  // Escape basic HTML
+  let escaped = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  // Inline code: `code`
+  escaped = escaped.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+  // Simple emphasis **bold** and *italic*
+  escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                   .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  // Line breaks
+  return escaped.replace(/\n/g, '<br>');
+}
+
+function timeNow() {
+  const d = new Date();
+  return d.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
 }
 
 function renderListings(listings) {
-  listings.forEach(listing => {
-    const card = document.createElement("div");
-    card.className = "listing-card";
+  if (!Array.isArray(listings) || listings.length === 0) return;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'listing-grid fade-in';
+  listings.forEach(l => {
+    const card = document.createElement('div');
+    card.className = 'listing-card';
+    const priceVal = l.price ?? l.Price; // support either JSON style
+    const price = priceVal ? `${Number(priceVal).toLocaleString('ro-RO')} €` : '';
+    const img = l.image || l.Image || '';
+    const title = l.title || l.Title || '';
+    const link = l.link || l.Link || '#';
     card.innerHTML = `
-      <img src="${listing.image}" alt="poza">
-      <h4>${listing.title}</h4>
-      <a href="${listing.link}" target="_blank">Vezi detalii</a>
-    `;
-    document.getElementById("messages").appendChild(card);
+      <div class="listing-card__image-wrap">${img ? `<img src="${img}" alt="imobil">` : `<div class='img-placeholder'>Fără imagine</div>`}
+        ${price ? `<span class="price-badge">${price}</span>` : ''}
+      </div>
+      <div class="listing-card__body">
+        <h4 class="listing-card__title">${title}</h4>
+        <div class="listing-card__meta">
+          <a class="btn-link" href="${link}" target="_blank" rel="noopener">Detalii ➜</a>
+        </div>
+      </div>`;
+    wrapper.appendChild(card);
   });
+  document.getElementById('messages').appendChild(wrapper);
 }
 
 function renderSuggestions(questions) {
@@ -97,15 +152,14 @@ function renderSuggestions(questions) {
 }
 
 function renderCost(cost) {
+    if (!cost) return;
     const costDiv = document.createElement("div");
-    costDiv.className = "cost-info";
+    costDiv.className = "cost-info fade-in";
     costDiv.innerHTML = `
-        <strong>Costul cererii:</strong><br>
-        Cost intrare: ${cost.inputTokens} tokens (${cost.inputCost.toFixed(8)} $)<br>
-        Cost ieșire: ${cost.outputTokens} tokens (${cost.outputCost.toFixed(8)} $)<br>
-        Cost total: ${cost.totalCost.toFixed(8)} $<br>
-        Timp de procesare: ${(cost.processingTimeInMiliseconds / 1000).toFixed(2)} sec
-    `;
+      <div class="cost-info__row"><span>Cost intrare</span><strong>${cost.inputTokens} (${cost.inputCost.toFixed(6)} $)</strong></div>
+      <div class="cost-info__row"><span>Cost ieșire</span><strong>${cost.outputTokens} (${cost.outputCost.toFixed(6)} $)</strong></div>
+      <div class="cost-info__row total"><span>Total</span><strong>${cost.totalCost.toFixed(6)} $</strong></div>
+      <div class="cost-info__time">⏱ ${(cost.processingTimeInMiliseconds / 1000).toFixed(2)} sec</div>`;
     totalCost += cost.totalCost;
     document.getElementById("totalCost").innerText = totalCost.toFixed(8);
     document.getElementById("messages").appendChild(costDiv);
@@ -141,4 +195,11 @@ document.addEventListener("DOMContentLoaded", function () {
       sendMessage();
     }
   });
+
+  // Auto-send first message when page loads
+  const initialMsg = "am ajuns pe romimo.ro";
+  const userInput = document.getElementById("userInput");
+  userInput.value = initialMsg;
+  sendMessage();
 });
+
