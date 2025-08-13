@@ -2,17 +2,18 @@ using AiRealEstate.Core.Infrastructure;
 using AiRealEstate.Core.Services;
 using AiRealEstate.Core.Skills;
 using AiRealEstate.Infrastructure.Services;
+using Azure.Identity;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Google;
-using Azure.Identity;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Load config
-AzureOpenAI azureOpenAI = builder.Configuration.GetSection("AzureOpenAI").Get<AzureOpenAI>()
+AzureOpenAI azureOpenAiConfig = builder.Configuration.GetSection("AzureOpenAI").Get<AzureOpenAI>()
     ?? throw new Exception("AzureOpenAI section is missing or invalid in the configuration.");
-VertexAI vertexAi = builder.Configuration.GetSection("VertexAI").Get<VertexAI>()
+VertexAI vertexAiConfig = builder.Configuration.GetSection("VertexAI").Get<VertexAI>()
             ?? throw new Exception("VertexAI section is missing or invalid in the configuration.");
 
 // Register Semantic Kernel
@@ -21,21 +22,38 @@ builder.Services.AddSingleton<Kernel>(_ =>
     var kb = Kernel.CreateBuilder();
 
     kb.AddAzureOpenAIChatCompletion(
-        deploymentName: azureOpenAI.DeploymentName,
-        endpoint: azureOpenAI.Endpoint,
-        apiKey: azureOpenAI.ApiKey,
+        deploymentName: azureOpenAiConfig.DeploymentName,
+        endpoint: azureOpenAiConfig.Endpoint,
+        apiKey: azureOpenAiConfig.ApiKey,
         serviceId: "azure"
     );
 
-    var credential = GoogleCredential.GetApplicationDefault();
-    credential = credential.CreateScoped("https://www.googleapis.com/auth/cloud-platform");
+    // === Vertex AI ===
+    var saJson = Encoding.UTF8.GetString(Convert.FromBase64String(vertexAiConfig.ServiceAccountBase64));
+    GoogleCredential cred = GoogleCredential.FromJson(saJson);
+    cred = cred.CreateScoped("https://www.googleapis.com/auth/cloud-platform");
+    string? cachedToken = null;
+    DateTimeOffset expiresAt = DateTimeOffset.MinValue;
 
-    kb.AddGoogleAIGeminiChatCompletion(
-        modelId: vertexAi.Model,
-        apiKey: vertexAi.GetServiceAccountJson(),
-        apiVersion: GoogleAIVersion.V1,
-        serviceId: "vertex"
-    );
+    async ValueTask<string> TokenProvider()
+    {
+        var now = DateTimeOffset.UtcNow;
+        if (cachedToken != null && now < expiresAt.AddMinutes(-2)) 
+            return cachedToken;
+
+        var tok = await cred.UnderlyingCredential.GetAccessTokenForRequestAsync();
+        cachedToken = tok;
+        expiresAt = now.AddMinutes(45);
+        return tok;
+    }
+
+    kb.AddVertexAIGeminiChatCompletion(
+        modelId: vertexAiConfig.Model,          
+        bearerTokenProvider: TokenProvider,
+        location: vertexAiConfig.Location,      
+        projectId: vertexAiConfig.ProjectId,
+        apiVersion: VertexAIVersion.V1,
+        serviceId: "vertex");
 
     return kb.Build();
 });

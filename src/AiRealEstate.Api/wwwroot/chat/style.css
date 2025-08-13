@@ -138,6 +138,35 @@ button:disabled {opacity:.55; cursor:not-allowed; filter: grayscale(.3);}
 .cost-info__row.total strong {color: var(--primary);} 
 .cost-info__time {font-size:11px; letter-spacing:.5px; text-transform:uppercase; opacity:.7;}
 
+/* Error JSON formatting inside chat bubble */
+.message__content pre.error-json {
+  margin: 4px 0 2px;
+  padding: 10px 12px;
+  background: var(--code-bg);
+  color: var(--code-text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 11.5px;
+  line-height: 1.35;
+  max-height: 260px;
+  overflow: auto;              /* both axes */
+  overflow-x: auto;
+  white-space: pre;            /* keep original formatting */
+  word-break: normal;          /* no forced breaks */
+  max-width: 100%;
+  /* scrollbar-width: thin; */
+}
+/* WebKit scrollbar styling */
+.message__content pre.error-json::-webkit-scrollbar { width: 8px; }
+.message__content pre.error-json::-webkit-scrollbar-track { background: transparent; }
+.message__content pre.error-json::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.25); border-radius: 4px; }
+.message__content pre.error-json::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.35); }
+.message--error .message__content pre.error-json {background: rgba(0,0,0,0.15); color: #fff; border-color: rgba(255,255,255,0.25);} 
+@media (prefers-color-scheme: dark) {
+  .message__content pre.error-json {background: #1e2a33; color: #d6e5f1; border-color: #31424f;}
+  .message--error .message__content pre.error-json {background: #3a1f1f; border-color:#5c2a2a;}
+}
+
 /* Compact header */
 .chat-header {display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin:4px 0 10px;}
 .chat-header__titles {flex:1; min-width:0;}

@@ -24,7 +24,7 @@ async function sendMessage() {
   const userInput = document.getElementById("userInput");
   const input = userInput.value;
   if (!input || input.trim() === "" || input.length < 3) {
-    appendMessage("Eroare", "Te rog introdu un mesaj valid (minim 3 caractere).");
+    appendMessage("Atentionare", "Te rog introdu un mesaj valid (minim 3 caractere).");
     spinner.style.display = 'none';
     sendButton.disabled = false;
     return;
@@ -41,9 +41,16 @@ async function sendMessage() {
       headers: { "Content-Type": "application/json", "X-Session-Id": sessionId },
         body: JSON.stringify({ model: selectedModel, message: trimmed })
     });
-
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();    
+    const rawText = await res.text();
+    if (!res.ok) {
+      renderErrorRaw(res.status, rawText);
+      spinner.style.display = 'none';
+      sendButton.disabled = false;
+      scrollToBottom();
+      return;
+    }
+    let data;
+    try { data = JSON.parse(rawText); } catch { data = { response: rawText }; }
     appendMessage("Asistent", data.response);
 
     if (data.suggestedQuestions) renderSuggestions(data.suggestedQuestions);
@@ -57,9 +64,32 @@ async function sendMessage() {
   } catch (e) {
     spinner.style.display = 'none';
     sendButton.disabled = false;
-    appendMessage("Eroare", "A apărut o problemă cu serverul.");
+    appendMessage("Eroare", "A apărut o problemă cu rețeaua sau parsarea răspunsului.");
     console.log("Chat error:", e);
   }
+}
+
+function renderErrorRaw(status, rawText) {
+  let pretty = rawText;
+  try {
+    const obj = JSON.parse(rawText);
+    pretty = JSON.stringify(obj, null, 2);
+  } catch { /* leave as is */ }
+  const messagesEl = document.getElementById("messages");
+  const wrap = document.createElement('div');
+  wrap.className = 'message message--error fade-in';
+  const avatar = uiConfig.avatars.error || '⚠️';
+  wrap.innerHTML = `
+    <div class="message__avatar">${avatar}</div>
+    <div class="message__bubble">
+      <div class="message__meta"><span class="message__sender">Eroare API ${status}</span><span class="message__time">${timeNow()}</span></div>
+      <div class="message__content"><pre class="error-json">${escapeHtml(pretty)}</pre></div>
+    </div>`;
+  messagesEl.appendChild(wrap);
+}
+
+function escapeHtml(txt){
+  return txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function appendMessage(sender, text) {
@@ -182,6 +212,11 @@ function getSelectedModel() {
             totalCost = 0.0;
             document.getElementById("totalCost").innerText = totalCost.toFixed(8);
             document.getElementById("messages").innerHTML = ""; // Clear messages
+            // send first message
+            const initialMsg = "am ajuns pe romimo.ro";
+            const userInput = document.getElementById("userInput");
+            userInput.value = initialMsg;
+            sendMessage();
             return selectedModel;
         }
     }

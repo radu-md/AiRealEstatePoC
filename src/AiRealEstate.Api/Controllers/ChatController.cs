@@ -2,6 +2,7 @@
 using AiRealEstate.Core.Services;
 using Azure;
 using Microsoft.AspNetCore.Mvc;
+using AiRealEstate.Api.Utilities;
 
 namespace AiRealEstate.Api.Controllers;
 
@@ -10,10 +11,12 @@ namespace AiRealEstate.Api.Controllers;
 public class ChatController : ControllerBase
 {
     private readonly IChatService _chatService;
+    private readonly IWebHostEnvironment _env;
 
-    public ChatController(IChatService chatService)
+    public ChatController(IChatService chatService, IWebHostEnvironment env)
     {
         _chatService = chatService;
+        _env = env;
     }
 
     [HttpPost]
@@ -37,11 +40,13 @@ public class ChatController : ControllerBase
         }
         catch (RequestFailedException ex)
         {
-            return StatusCode((int)ex.Status, ex);
+            var json = ex.ToSafeJson(includeStack: _env.IsDevelopment(), maxDepth: 3);
+            return new ContentResult { StatusCode = (int)ex.Status, Content = json, ContentType = "application/json" };
         }
         catch (Exception ex)
         {
-            return StatusCode(500, ex);
+            var json = ex.ToSafeJson(includeStack: _env.IsDevelopment(), maxDepth: 3);
+            return new ContentResult { StatusCode = 500, Content = json, ContentType = "application/json" };
         }
     }
 
@@ -54,7 +59,8 @@ public class ChatController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, $"An error occurred: {ex.Message}");
+            var json = ex.ToSafeJson(includeStack: _env.IsDevelopment(), maxDepth: 2);
+            return new ContentResult { StatusCode = 500, Content = json, ContentType = "application/json" };
         }
     }
 }
