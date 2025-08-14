@@ -66,7 +66,7 @@ body {
 @keyframes containerFloat { from { opacity:0; transform:translateY(14px);} to { opacity:1; transform:translateY(0);} }
 
 #messages {
-  height: 300px;
+  /* Fluid height: prefer ~45vh inside container with safe min/max */
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -76,6 +76,8 @@ body {
   background: linear-gradient(180deg,var(--bg-alt),var(--bg) 130%);
   border-radius: var(--radius);
   scroll-behavior: smooth;
+  min-height: 260px;
+  height: clamp(260px, 45vh, 560px);
 }
 
 .message {display:flex; gap:10px; margin:4px 0 14px; align-items:flex-end; animation: fadeInUp .5s ease;}
@@ -258,7 +260,7 @@ details.pricing-box[open] summary::before {
 /* ================= Responsive Design Enhancements ================= */
 @media (max-width: 900px) {
   #chat-container { margin: 24px auto; padding: 18px; }
-  #messages { height: 360px; }
+  #messages { height: clamp(240px, 50vh, 520px); }
 }
 
 @media (max-width: 700px) {
@@ -266,7 +268,7 @@ details.pricing-box[open] summary::before {
   h1 { font-size: 1.35rem; }
   h2 { font-size: 1.05rem; }
   h3 { font-size: 0.95rem; }
-  #messages { height: 330px; }
+  #messages { height: clamp(220px, 46vh, 480px); }
   .message__bubble { max-width: 82%; font-size: 14px; }
   .suggestions { overflow-x: auto; white-space: nowrap; padding-bottom: 4px; }
   .suggestions button { display: inline-block; margin-bottom: 6px; }
@@ -275,13 +277,27 @@ details.pricing-box[open] summary::before {
 }
 
 @media (max-width: 540px) {
-  body { background:#ffffff; }
-  #chat-container { margin: 0; border-radius:0; border:none; min-height: 100vh; box-shadow:none; padding: 16px 14px 24px; }
-  #messages { height: calc(100vh - 390px); }
+  /* Force light scheme & adjust stacking to avoid overlap */
+  :root {
+    --bg: #f5f7fb;
+    --bg-alt: #ffffff;
+    --text: #243b53;
+    --text-light: #486581;
+    --border: #d9e2ec;
+    --border-strong: #c1ccd8;
+  }
+  body { background:#ffffff !important; }
+  #chat-container { margin: 0; border-radius:0; border:none; min-height: 100vh; box-shadow:none; padding: 16px 14px 24px; display:flex; flex-direction:column; }
+  #messages { flex:1 1 auto; min-height: 42vh; max-height: calc(100vh - 350px); height: auto; }
   #input-area { flex-direction: column; }
   #input-area button { width: 100%; }
   input[type="text"] { font-size:15px; }
-  details.pricing-box { margin-top:10px; }
+  details.pricing-box { margin-top:10px; position:relative; z-index:3; }
+  .suggestions { position:relative; z-index:2; margin-top:6px; }
+  .message__bubble { background:#fff; color: var(--text); }
+  .message--assistant .message__bubble { background:#fff; }
+  .message--user .message__bubble { background: var(--primary); color:#fff; }
+  .message--error .message__bubble { background: var(--danger); color:#fff; }
 }
 
 @media (max-width: 400px) {
@@ -295,7 +311,7 @@ details.pricing-box[open] summary::before {
 
 /* Support landscape small height devices */
 @media (max-height: 520px) and (orientation: landscape) {
-  #messages { height: 220px; }
+  #messages { height: clamp(160px, 55vh, 320px); }
   #chat-container { padding: 12px 16px; }
   .suggestions { max-height: 70px; overflow-y:auto; }
 }

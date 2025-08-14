@@ -143,8 +143,8 @@ public class ChatService : IChatService
             return new RequestCost();
         }
 
-        var inputPrice = aiModel == "azure" ? 0.25 : 0.10; // GPT-5-Mini vs Vertex AI
-        var outputPrice = aiModel == "azure" ? 2.00 : 0.40; // GPT-5-Mini vs Vertex AI
+        var inputPrice = aiModel == "azure" ? 0.05 : 0.10; // GPT-5-nano vs Vertex AI
+        var outputPrice = aiModel == "azure" ? 0.40 : 0.40; // GPT-5-nano vs Vertex AI
 
         var inputTokens = (int)Math.Ceiling(inputText.Length / 4.0); // Rough estimate: 1 token ~ 4 characters
         var outputTokens = (int)Math.Ceiling(outputText.Length / 4.0); // Rough estimate: 1 token ~ 4 characters
@@ -189,7 +189,6 @@ public class ChatService : IChatService
 
         if (allNullOrEmpty)
         {
-            //suggestions.Add("Doresti să cumperi sau să închiriezi?");
             suggestions.Add("Caut o locuință de vânzare");
             suggestions.Add("Caut o locuință de închiriat");
             return suggestions;
@@ -197,7 +196,6 @@ public class ChatService : IChatService
 
         if (string.IsNullOrWhiteSpace(preferences!.TransactionType))
         {
-            //suggestions.Add("Ce anume vrei?");
             suggestions.Add("Vreau să cumpăr");
             suggestions.Add("Vreau să închiriez");
             return suggestions;
@@ -205,7 +203,6 @@ public class ChatService : IChatService
 
         if (string.IsNullOrWhiteSpace(preferences.PropertyType))
         {
-            //suggestions.Add("Ce tip de locuință preferi?");
             suggestions.Add("Garsoniera");
             suggestions.Add("Apartament");
             suggestions.Add("Casa");
@@ -214,7 +211,6 @@ public class ChatService : IChatService
 
         if (string.IsNullOrWhiteSpace(preferences.County))
         {
-            //suggestions.Add("În ce județ dorești să cauți?");
             suggestions.Add("Cluj");
             suggestions.Add("Timiș");
             suggestions.Add("Bihor");
@@ -223,7 +219,6 @@ public class ChatService : IChatService
 
         if (string.IsNullOrWhiteSpace(preferences.City))
         {
-            //suggestions.Add("În ce localitate dorești să cauți?");
             switch (preferences.County?.Trim().ToLower())
             {
                 case "cluj":
@@ -251,7 +246,6 @@ public class ChatService : IChatService
 
         if (!preferences.MaxPrice.HasValue)
         {
-            //suggestions.Add("Care este bugetul tău maxim?");
             suggestions.Add("Sub 50.000 EUR");
             suggestions.Add("Până în 100.000 EUR");
             suggestions.Add("Până în 200.000 EUR");
@@ -260,7 +254,6 @@ public class ChatService : IChatService
 
         if (string.IsNullOrWhiteSpace(preferences.TextFilter))
         {
-            //suggestions.Add("Ai vreo preferință legată de zonă sau facilități?");
             suggestions.Add("Lângă scoala gimnaziala");
             suggestions.Add("Zonă liniștită");
             suggestions.Add("Lângă un parc");
