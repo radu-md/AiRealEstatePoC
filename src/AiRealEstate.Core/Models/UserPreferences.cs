@@ -3,7 +3,8 @@
 public class UserPreferences
 {
     public string? PropertyType { get; set; } 
-    public string? TransactionType { get; set; }  
+    public string? TransactionType { get; set; }
+    public int? RoomNumbers { get; set; }
     public string? County { get; set; }
     public string? City { get; set; }
     public int? MaxPrice { get; set; }
@@ -15,6 +16,7 @@ public class UserPreferences
                String.IsNullOrWhiteSpace(PropertyType) &&
                String.IsNullOrWhiteSpace(City) &&
                String.IsNullOrWhiteSpace(County) &&
+               RoomNumbers == null &&
                MaxPrice == null &&
                String.IsNullOrWhiteSpace(TextFilter);
     }
@@ -39,6 +41,10 @@ public class UserPreferences
             (!string.IsNullOrWhiteSpace(County) && !string.IsNullOrWhiteSpace(other.County) && County != other.County))
             County = other.County;
 
+        if ((!RoomNumbers.HasValue && other.RoomNumbers.HasValue) ||
+            (RoomNumbers.HasValue && other.RoomNumbers.HasValue && RoomNumbers != other.RoomNumbers))
+            RoomNumbers = other.RoomNumbers;
+
         if ((!MaxPrice.HasValue && other.MaxPrice.HasValue) ||
             (MaxPrice.HasValue && other.MaxPrice.HasValue && MaxPrice != other.MaxPrice))
             MaxPrice = other.MaxPrice;
@@ -52,10 +58,12 @@ public class UserPreferences
     {
         var parts = new List<string>();
 
-        if (!string.IsNullOrWhiteSpace(PropertyType))
-            parts.Add($"tip proprietate: {PropertyType}");
         if (!string.IsNullOrWhiteSpace(TransactionType))
             parts.Add($"tranzacție: {TransactionType}");
+        if (!string.IsNullOrWhiteSpace(PropertyType))
+            parts.Add($"tip proprietate: {PropertyType}");
+        if (RoomNumbers.HasValue)
+            parts.Add($"număr camere: {RoomNumbers.Value}");
         if (!string.IsNullOrWhiteSpace(County))
             parts.Add($"județ: {County}");
         if (!string.IsNullOrWhiteSpace(City))

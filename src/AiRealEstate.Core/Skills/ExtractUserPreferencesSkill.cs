@@ -27,8 +27,9 @@ public class ExtractUserPreferencesSkill : IExtractUserPreferencesSkill
         var completion = await _kernel
             .GetRequiredService<IChatCompletionService>(aiModel)
             .GetChatMessageContentAsync(history);
+        string sanitizedContent = completion.Content!.Trim().Trim('`').Replace("json", "");
 
-        var prefs = JsonSerializer.Deserialize<UserPreferences>(completion.Content!, new JsonSerializerOptions
+        var prefs = JsonSerializer.Deserialize<UserPreferences>(sanitizedContent, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         });

@@ -28,32 +28,13 @@ builder.Services.AddSingleton<Kernel>(_ =>
         serviceId: "azure"
     );
 
-    // === Vertex AI ===
-    var saJson = Encoding.UTF8.GetString(Convert.FromBase64String(vertexAiConfig.ServiceAccountBase64));
-    GoogleCredential cred = GoogleCredential.FromJson(saJson);
-    cred = cred.CreateScoped("https://www.googleapis.com/auth/cloud-platform");
-    string? cachedToken = null;
-    DateTimeOffset expiresAt = DateTimeOffset.MinValue;
-
-    async ValueTask<string> TokenProvider()
-    {
-        var now = DateTimeOffset.UtcNow;
-        if (cachedToken != null && now < expiresAt.AddMinutes(-2)) 
-            return cachedToken;
-
-        var tok = await cred.UnderlyingCredential.GetAccessTokenForRequestAsync();
-        cachedToken = tok;
-        expiresAt = now.AddMinutes(45);
-        return tok;
-    }
-
-    kb.AddVertexAIGeminiChatCompletion(
-        modelId: vertexAiConfig.Model,          
-        bearerTokenProvider: TokenProvider,
-        location: vertexAiConfig.Location,      
-        projectId: vertexAiConfig.ProjectId,
-        apiVersion: VertexAIVersion.V1,
-        serviceId: "vertex");
+#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    kb.AddVertexAIGeminiChatCompletion(modelId: vertexAiConfig.Model,
+            projectId: vertexAiConfig.ProjectId,
+            location: vertexAiConfig.Location,
+            bearerTokenProvider: () => GoogleTokenProvider(vertexAiConfig.GetServiceAccountJson()),
+            serviceId: "vertex");
+#pragma warning restore SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
     return kb.Build();
 });
@@ -102,3 +83,12 @@ app.MapGet("/config", (IConfiguration cfg) =>
 app.MapGet("/", () => Results.Redirect("/chat/index.html"));
 
 app.Run();
+
+static async ValueTask<string> GoogleTokenProvider(string json)
+{
+    GoogleCredential credential = GoogleCredential
+        .FromJson(json)
+        .CreateScoped("https://www.googleapis.com/auth/cloud-platform");
+
+    return await ((ITokenAccess)credential).GetAccessTokenForRequestAsync();
+}

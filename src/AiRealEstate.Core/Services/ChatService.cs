@@ -2,6 +2,9 @@
 using AiRealEstate.Core.Skills;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using System.Diagnostics.Metrics;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace AiRealEstate.Core.Services;
 
@@ -53,7 +56,6 @@ public class ChatService : IChatService
         var pastMessages = _state.GetHistory(sessionId);
         var userPreferences = await _extractUserPreferencesSkill.ExtractAsync(aiModel, newMessage);
         var newUserPreferences = _userPreferencesStateService.UpdatePreferences(sessionId, userPreferences);
-        var suggestedQuestions = GenerateSmartSuggestions(newUserPreferences);
 
         var history = new ChatHistory();
         history.AddSystemMessage("""
@@ -66,10 +68,6 @@ public class ChatService : IChatService
         if (!newUserPreferences.IsEmpty())
         {
             history.AddSystemMessage($"Preferinte pentru sugestii: {newUserPreferences.ToString()}");
-        }
-        if (suggestedQuestions is not null && suggestedQuestions.Any())
-        {
-            history.AddSystemMessage($"Întrebări sugerate: {String.Join(" ", suggestedQuestions)}");
         }
 
         AddPastMessagesToHistory(history, pastMessages);
@@ -102,6 +100,13 @@ public class ChatService : IChatService
 
         string inputText = string.Join(" ", history
             .Select(m => m.Content));
+
+
+        var suggestedQuestions = GenerateSmartSuggestions(newUserPreferences);
+        if (suggestedQuestions is not null && suggestedQuestions.Any())
+        {
+            history.AddSystemMessage($"Întrebări sugerate: {String.Join(" ", suggestedQuestions)}");
+        }
 
         if (string.IsNullOrWhiteSpace(adUrl))
         {
@@ -176,25 +181,55 @@ public class ChatService : IChatService
         }
     }
 
+    private static readonly Dictionary<string, string[]> CitiesByCounty =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Cluj"] = new[] { "Cluj-Napoca", "Turda", "Dej" },
+            ["Timiș"] = new[] { "Timișoara", "Lugoj", "Sânnicolau Mare" },
+            ["Bihor"] = new[] { "Oradea", "Salonta", "Beiuș" }
+        };
+
+    private static IEnumerable<string> PickRandomDistinct(IList<string> items, int count)
+    {
+        if (items.Count <= count) return items;
+
+        var result = new List<string>(count);
+        var picked = new HashSet<int>();
+        while (result.Count < count && picked.Count < items.Count)
+        {
+            var idx = RandomNumberGenerator.GetInt32(items.Count);
+            if (picked.Add(idx))
+                result.Add(items[idx]);
+        }
+        return result;
+    }
+
+    private static bool TryGetCities(string county, out string[] cities)
+    {
+        // unifică „Timis” -> „Timiș”
+        var key = CitiesByCounty.ContainsKey(county) ? county : county switch
+        {
+            "Timis" => "Timiș",
+            _ => county
+        };
+        return CitiesByCounty.TryGetValue(key, out cities!);
+    }
+
+    private static string CanonicalCounty(string county) =>
+        county.Equals("Timis", StringComparison.OrdinalIgnoreCase) ? "Timiș" : county;
+
+    private static string FormatPair(string county, string city) => $"{county} — {city}";
+
+    private static void AddOnce(List<string> list, HashSet<string> seen, string value)
+    {
+        if (seen.Add(value)) list.Add(value);
+    }
+
     private List<string>? GenerateSmartSuggestions(UserPreferences? preferences)
     {
         var suggestions = new List<string>();
 
-        bool allNullOrEmpty = preferences == null ||
-            (string.IsNullOrWhiteSpace(preferences.TransactionType) &&
-             string.IsNullOrWhiteSpace(preferences.PropertyType) &&
-             string.IsNullOrWhiteSpace(preferences.City) &&
-             !preferences.MaxPrice.HasValue &&
-             string.IsNullOrWhiteSpace(preferences.TextFilter));
-
-        if (allNullOrEmpty)
-        {
-            suggestions.Add("Caut o locuință de vânzare");
-            suggestions.Add("Caut o locuință de închiriat");
-            return suggestions;
-        }
-
-        if (string.IsNullOrWhiteSpace(preferences!.TransactionType))
+        if (preferences is null || preferences.IsEmpty() || string.IsNullOrWhiteSpace(preferences!.TransactionType))
         {
             suggestions.Add("Vreau să cumpăr");
             suggestions.Add("Vreau să închiriez");
@@ -209,38 +244,45 @@ public class ChatService : IChatService
             return suggestions;
         }
 
-        if (string.IsNullOrWhiteSpace(preferences.County))
+        if (!preferences.RoomNumbers.HasValue)
         {
-            suggestions.Add("Cluj");
-            suggestions.Add("Timiș");
-            suggestions.Add("Bihor");
+            suggestions.Add("1 cameră");
+            suggestions.Add("2 camere");
+            suggestions.Add("3 camere");
+            suggestions.Add("4 camere sau mai mult");
             return suggestions;
         }
 
-        if (string.IsNullOrWhiteSpace(preferences.City))
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        if (string.IsNullOrWhiteSpace(preferences.County))
         {
-            switch (preferences.County?.Trim().ToLower())
+            var allPairs = CitiesByCounty
+            .Select(kv => (County: CanonicalCounty(kv.Key), Cities: kv.Value))
+            .GroupBy(x => x.County, StringComparer.OrdinalIgnoreCase)
+            .Select(g => (County: g.Key, Cities: g.First().Cities)) // dedup „Timiș/Timis”
+            .SelectMany(x => x.Cities.Select(cityName => FormatPair(x.County, cityName)))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+            foreach (var pick in PickRandomDistinct(allPairs, 3))
+                AddOnce(suggestions, seen, pick);
+
+            return suggestions;
+        }
+
+        if (!string.IsNullOrWhiteSpace(preferences.County) && string.IsNullOrWhiteSpace(preferences.City))
+        {
+            if (TryGetCities(preferences.County, out var cities))
             {
-                case "cluj":
-                    suggestions.Add("Cluj-Napoca");
-                    suggestions.Add("Turda");
-                    suggestions.Add("Dej");
-                    break;
-                case "timiș":
-                case "timis":
-                    suggestions.Add("Timișoara");
-                    suggestions.Add("Lugoj");
-                    suggestions.Add("Sânnicolau Mare");
-                    break;
-                case "bihor":
-                    suggestions.Add("Oradea");
-                    suggestions.Add("Salonta");
-                    suggestions.Add("Beiuș");
-                    break;
-                default:
-                    suggestions.Add("Localitate principală din județ");
-                    break;
+                foreach (var c in cities.Take(3))
+                    AddOnce(suggestions, seen, FormatPair(preferences.County, c));
             }
+            else
+            {
+                AddOnce(suggestions, seen, FormatPair(preferences.County, CitiesByCounty[preferences.County][0]));
+            }
+
             return suggestions;
         }
 
@@ -255,14 +297,8 @@ public class ChatService : IChatService
         if (string.IsNullOrWhiteSpace(preferences.TextFilter))
         {
             suggestions.Add("Lângă scoala gimnaziala");
-            suggestions.Add("Zonă liniștită");
+            suggestions.Add("Zonă o clinica medicală");
             suggestions.Add("Lângă un parc");
-            return suggestions;
-        }
-
-        if (!preferences.IsEmpty())
-        {
-            suggestions.Add("Reseteaza filtrele de cautare");
             return suggestions;
         }
 

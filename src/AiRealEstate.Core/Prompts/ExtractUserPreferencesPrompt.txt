@@ -6,6 +6,7 @@ Returnează rezultatul ca un obiect JSON de forma:
   "TransactionType": "...",
   "County": "...",
   "City": "...",
+  "RoomNumbers": ...,
   "MaxPrice": ...,
   "TextFilter": "..."
 }
@@ -17,6 +18,7 @@ Returnează rezultatul ca un obiect JSON de forma:
   - dacă spune "vreau să închiriez", "închiriere", "chirie", "închiriază" → întoarce "de-inchiriat"
 - County: orice județ din România, cu litere mici (ex: cluj, timis, ilfov)
 - City: orice localitate, format lowercase, cu liniuțe (ex: cluj-napoca, bucuresti, timisoara)
+- RoomNumbers: număr de camere (ex: 1, 2, 3, 4, 5)
 - MaxPrice: valoare numerică (fără simbol)
 - TextFilter: orice preferință exprimată în limbaj natural (ex: "aproape de parc", "zonă liniștită", "lângă scoala")
 - dacă utilizatorul scrie "Caut o locuință de vânzare" sau "Vreau să cumpăr" → returnează "TransactionType": "vanzare"

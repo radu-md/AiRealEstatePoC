@@ -23,20 +23,20 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0f141a;
-    --bg-alt: #16202b;
-    --border: #2c3a46;
-    --border-strong: #3d4e5c;
-    --text: #f2f6fa;
-    --text-light: #c0d0dd;
-    --primary: #4aa8ff;
-    --primary-hover: #3897ef;
-    --accent: #ffcf66;
-    --danger: #ff6b5a;
-    --code-bg: #1d2933;
-    --code-text: #d0e6f5;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.6);
-    --shadow: 0 4px 14px rgba(0,0,0,0.65);
+  --bg: #0e1419;                 /* page background */
+  --bg-alt: #17212b;             /* panels */
+  --border: #2a3944;
+  --border-strong: #3a4a56;
+  --text: #e6edf3;
+  --text-light: #9bb2c3;
+  --primary: #3d8dff;
+  --primary-hover: #3379dd;
+  --accent: #ffbf4d;
+  --danger: #ff5f52;
+  --code-bg: #1d2b34;
+  --code-text: #c9e7f7;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.55);
+  --shadow: 0 4px 14px rgba(0,0,0,0.6);
   }
 }
 
@@ -167,6 +167,37 @@ button:disabled {opacity:.55; cursor:not-allowed; filter: grayscale(.3);}
 @media (prefers-color-scheme: dark) {
   .message__content pre.error-json {background: #1e2a33; color: #d6e5f1; border-color: #31424f;}
   .message--error .message__content pre.error-json {background: #3a1f1f; border-color:#5c2a2a;}
+}
+
+/* --- Dark mode component refinements (placed after base to override) --- */
+@media (prefers-color-scheme: dark) {
+  #chat-container { background: var(--bg-alt); }
+  #messages { background: linear-gradient(180deg,var(--bg-alt),var(--bg) 140%); }
+  .message__bubble { background:#1f2c36; border-color:#2f4250; color: var(--text); }
+  .message--assistant .message__bubble { background:#253545; }
+  .message--user .message__bubble { background: var(--primary); color:#fff; }
+  .message__meta { opacity:.7; }
+  .suggestions button { background:#26445a; color:#d3e7f5; }
+  .suggestions button:hover { background:#2f5670; }
+  .btn-link { background: rgba(61,141,255,0.15); color: var(--primary); }
+  .btn-link:hover { background: var(--primary); color:#fff; }
+  .listing-card { background:#1c2730; border-color:#2c3a45; }
+  .listing-card__image-wrap { background:linear-gradient(135deg,#20313d,#152028); }
+  .price-badge { background: var(--primary); }
+  .cost-info { background: linear-gradient(135deg,#153743,#0f272f); border-color:#1d4a58; }
+  .cost-info__row span { color: var(--text-light); }
+  details.pricing-box { background:#1a262f; border-color:#2f404d; }
+  details.pricing-box[open] { border-color: var(--primary); }
+  .pricing-grid .model { background:#1f2d37; border-color:#31424f; }
+  input[type="text"] { background:#1c2730; border-color:#2e3d49; color: var(--text); }
+  input[type="text"]:focus { box-shadow: 0 0 0 3px rgba(61,141,255,0.35); }
+  button { box-shadow: 0 3px 10px rgba(0,0,0,0.4); }
+  .message--error .message__bubble { background: var(--danger); border-color: var(--danger); }
+  .model-pill { background: var(--primary); }
+  .cost-badge { background: var(--primary); }
+  .subtitle { color: var(--text-light); }
+  .message__content code.inline-code { background:#243542; color: var(--code-text); }
+  .message--user .message__content code.inline-code { background: rgba(255,255,255,0.25); }
 }
 
 /* Compact header */
